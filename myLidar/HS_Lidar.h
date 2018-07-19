@@ -6,7 +6,6 @@
 #include "iostream"
 #include "fstream"
 
-
 class HS_Lidar
 {
 public:

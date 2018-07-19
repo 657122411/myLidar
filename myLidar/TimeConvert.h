@@ -1,8 +1,6 @@
 #ifndef TIMECONVERT_H
 #define TIMECONVERT_H
 
-#include<iostream>
-using namespace std;
 
 typedef struct tagCOMMONTIME
 {

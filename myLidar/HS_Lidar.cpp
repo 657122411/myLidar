@@ -1,9 +1,4 @@
 #include "HS_Lidar.h"
-#include "iostream"
-#include "fstream"
-#include "HS_Lidar.h"
-
-using namespace std;
 
 #define Swap16(v)  ( ((v & 0xff) << 8) | (v >> 8) )	//字节序转换函数
  				    
@@ -13,11 +8,6 @@ using namespace std;
 		             | (v << 24) )	//字节序转换函数
 
 
-
-extern uint16_t week;
-extern double second;
-extern uint16_t week1;
-extern double second1;
 
 
 union DoubleAndChar                
@@ -167,54 +157,7 @@ void HS_Lidar::getChannel(FILE *fp, HS_Lidar_Channel &CH) {
 	}
 		
 
-	//fread(&CH.nChannelNo, sizeof(uint16_t), 1, fp);
-	//CH.nChannelNo = Swap16(CH.nChannelNo);
 
-	//fread(&CH.nS0, sizeof(uint16_t), 1, fp);
-	//CH.nS0 = Swap16(CH.nS0);
-
-	//fread(&CH.nL0, sizeof(uint16_t), 1, fp);
-	//CH.nL0 = Swap16(CH.nL0);
-
-
-	//fread(&CH.nD0, CH.nL0 * sizeof(uint16_t), 1, fp);
-	//
-	//DataInt16Swap16(CH.nD0, CH.nL0);
-	//
-	//
-
-
-	//fread(&CH.nTest, sizeof(uint32_t), 1, fp);
-	//CH.nTest = Swap32(CH.nTest);
-
-	//if (CH.nTest == 3952125274)
-	//{
-	//	fseek(fp, -4, SEEK_CUR);
-	//	CH.nS1 = 0;
-	//	CH.nL1 = 0;
-	//	CH.nD1 = 0;
-	//}
-	//else
-	//{
-	//	fseek(fp, -4, SEEK_CUR);
-
-	//	fread(&CH.nS1, sizeof(uint16_t), 1, fp);
-	//	CH.nS1 = Swap16(CH.nS1);
-
-	//	fread(&CH.nL1, sizeof(uint16_t), 1, fp);
-	//	CH.nL1 = Swap16(CH.nL1);
-
-	//	uint16_t *Ch_Data1 = new uint16_t[CH.nL1];
-	//	fread(Ch_Data1, CH.nL1 * sizeof(uint16_t), 1, fp);
-	//	DataInt16Swap16(Ch_Data1, CH.nL1);
-
-
-	//	if (Ch_Data1 != NULL)
-	//	{
-	//		delete[] Ch_Data1;
-	//		Ch_Data1 = NULL;
-	//	}
-	//}
 
 
 }

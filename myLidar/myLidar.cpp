@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "WaveData.h"
+using namespace std;
 
 int main()
 {
