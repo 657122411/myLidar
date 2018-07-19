@@ -4,7 +4,9 @@
 #include <math.h>
 #include "HS_Lidar.h"
 #include "TimeConvert.h"
+#include "levmar.h"
 using namespace std;
+
 
 //UTC时间结构体
 struct Time
@@ -17,22 +19,15 @@ struct Time
 	int second;
 };
 
+
 //高斯函数参数结构体
 struct GaussParameter
 {
-	float A;
-	float b;
-	float sigma;
+	float A;	//振幅（Ymax）
+	float b;	//脉冲距离(对称轴)
+	float sigma;//脉冲宽度（宽幅）
 };
 
-
-bool isHeaderRight(uint8_t header[8]);
-
-//高斯平滑核
-void gau_kernel(float kernel[], int size, float sigma);
-
-//高斯平滑函数
-void gaussian(float src[], float dst[]);
 
 //波形数据类
 class WaveData
@@ -40,18 +35,17 @@ class WaveData
 public:
 	WaveData();
 	~WaveData();
-	void GetData(HS_Lidar &hs);
-	void Filter(vector<float> &srcWave);
-	void Resolve(vector<float> &srcWave,vector<GaussParameter> &waveParam);
-	void Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam);
+	void GetData(HS_Lidar &hs);												//截取兴趣数据
+	void Filter(vector<float> &srcWave);									//滤波平滑
+	void Resolve(vector<float> &srcWave,vector<GaussParameter> &waveParam);	//分解高斯分量参数
+	void Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam);//迭代优化（LM）
 
-
-	Time m_time;
-	vector<float> m_BlueWave;
-	vector<float> m_GreenWave;
-	vector<GaussParameter> m_BlueGauPra;
-	vector<GaussParameter> m_GreenGauPra;
-	vector<GaussParameter>::iterator gaussPraIter;
+	Time m_time;									//UTC时间
+	vector<float> m_BlueWave;						//CH2通道数据
+	vector<float> m_GreenWave;						//CH3通道数据
+	vector<GaussParameter> m_BlueGauPra;			//CH2数据高斯分量参数
+	vector<GaussParameter> m_GreenGauPra;			//CH3数据高斯分量参数
+	vector<GaussParameter>::iterator gaussPraIter;	//高斯参数结构体迭代器
 };
 
 

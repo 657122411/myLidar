@@ -1,25 +1,5 @@
 #include "WaveData.h"
 
-
-//判断帧头是否正确
-bool isHeaderRight(uint8_t header[8])
-{
-	uint8_t headerSign[] = { 1, 35, 69, 103, 137, 171, 205, 239 };
-	bool returnVal = true;
-	for (size_t i = 0; i < 8; i++)
-	{
-		if (header[i] != headerSign[i])
-		{
-			returnVal = false;
-			break;
-		}
-	}
-	return returnVal;
-}
-
-
-
-
 /*功能：  高斯核生成
 //kernel：存储生成的高斯核
 //size：  核的大小
@@ -66,6 +46,49 @@ void gaussian(float src[], float dst[])
 }
 
 
+/*功能：	假设函数模型
+//*p:	代求参数
+//*x：  原始数据（测量值）
+//m：	参数维度
+//n：	测量值维度
+//*data:？
+*/
+void expfun(double *p, double *x, int m, int n, void *data)
+{
+	register int i;
+	for (i = 0; i<n; ++i)
+	{
+		//写出参数与x[i]之间的关系式，由于这里方程的右边没有观测值，所以只有参数
+		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2])) + p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]));
+	}
+
+}
+
+
+/*功能：	函数模型的雅可比矩阵
+//*p:	代求参数
+//jac： 雅可比矩阵参数
+//m：	参数维度
+//n：	测量值维度
+//*data:？
+*/
+void jacexpfun(double *p, double *jac, int m, int n, void *data)
+{
+	register int i, j;
+	//写出雅克比矩阵
+	for (i = j = 0; i<n; ++i)
+	{
+		jac[j++] = exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*p[2]);
+		jac[j++] = p[0] * (i - p[1]) / (p[2] * p[2])*exp(-(i - p[1])*(i - p[1]) / (2 * p[2] * p[2]));
+		jac[j++] = p[0] * (i - p[1])*(i - p[1]) / (p[2] * p[2] * p[2])*exp(-(i - p[1])*(i - p[1]) / (2 * p[2] * p[2]));
+
+		jac[j++] = exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*p[5]);
+		jac[j++] = p[3] * (i - p[4]) / (p[5] * p[5])*exp(-(i - p[4])*(i - p[4]) / (2 * p[5] * p[5]));
+		jac[j++] = p[3] * (i - p[4])*(i - p[4]) / (p[5] * p[5] * p[5])*exp(-(i - p[4])*(i - p[4]) / (2 * p[5] * p[5]));
+	}
+}
+
+
 WaveData::WaveData()
 {
 
@@ -77,7 +100,9 @@ WaveData::~WaveData()
 };
 
 
-/*提取原始数据中的兴趣区域数据*/
+/*功能：	提取原始数据中的兴趣区域数据
+//*&hs:	原始Lidar数据
+*/
 void WaveData::GetData(HS_Lidar &hs)
 {
 	PGPSTIME pgt = new GPSTIME;
@@ -89,9 +114,9 @@ void WaveData::GetData(HS_Lidar &hs)
 	m_time.year = pct->year;
 	m_time.month = pct->month;
 	m_time.day = pct->day;
-	m_time.hour = pct->hour;
+	m_time.hour = pct->hour+8;	//直接转化为北京时间
 	m_time.minute = pct->minute;
-	m_time.minute = pct->second;
+	m_time.second = pct->second;
 	delete pgt;
 	delete pct;
 
@@ -101,7 +126,9 @@ void WaveData::GetData(HS_Lidar &hs)
 };
 
 
-/*去噪滤波函数*/
+/*功能：		去噪滤波函数
+//&srcWave:	通道原始数据
+*/
 void WaveData::Filter(vector<float> &srcWave)
 {
 	vector<float> dstWave;
@@ -112,17 +139,22 @@ void WaveData::Filter(vector<float> &srcWave)
 };
 
 
-/*高斯分量分解函数*/
+/*功能：			高斯分量分解函数
+//&srcWave:		通道原始数据
+//&waveParam：	该通道的高斯分量参数
+*/
 void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam)
 {
+	//拷贝原始数据
 	float data[320],temp[320];
 	int i = 0, m = 0;
 	for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
 	{
 		data[i] = *iter;
 	}
-
-	float min = data[0];//噪声最小值
+	
+	//计算噪声最小值
+	float min = data[0];
 	for (m = 0; m < 320; m++)
 	{
 		temp[m] = data[m];
@@ -130,19 +162,18 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 			min = data[m];
 	}
 
-	//去噪
+	//除去噪声
 	for (m = 0; m < 320; m++)
 	{
 		temp[m] -= min;
 	}
-
 	srcWave.assign(&temp[0],&temp[320]);
 
 	//高斯分量
 	float A;//振幅
 	float b, tg, tgl, tgr;//脉冲距离，峰值时间位置，半峰时间位置（左右）
 
-
+	//循环剥离过程
 	do
 	{
 		A = 0;
@@ -182,10 +213,10 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 			tg = tgl;
 		}
 
-
 		//计算sigma
 		float sigma = fabs(tg - b) / sqrt(2 * log(2));
 
+		//保存高斯分量参数
 		GaussParameter param{A,b,sigma};
 		waveParam.push_back(param);
 
@@ -213,9 +244,6 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		//获取向量中所存结构体的第一个波峰值作阈值参考量
 		gaussPraIter = waveParam.begin();
 	} while (A >= 1.5*20/*Gnoise*/);//循环条件!!!值得探讨
-
-
-
 
 
 	//对高斯分量做筛选（时间间隔小于一定值的剔除能量较小的分量）
@@ -251,12 +279,65 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		}
 	}
 
-
 };
 
 
-void WaveData::Optimize(vector<float> &originWave,vector<GaussParameter> &waveParam)
+/*功能：			LM算法迭代优化
+//&srcWave:		通道原始数据
+//&waveParam：	该通道的高斯分量参数
+//LM算法参考：	https://blog.csdn.net/shajun0153/article/details/75073137
+*/
+void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam)
 {
+	if (waveParam.size()!=2)//解算的高斯分量不等于两个则不优化
+	{
+		return;
+	}
+
+	//获取高斯函数参数
+	double p[6];
+	int i = 0;
+	for (auto gp : waveParam)
+	{
+		p[i++] = gp.A;
+		p[i++] = gp.b;
+		p[i++] = gp.sigma;
+	}
+	int m = i;
+	int n = srcWave.size();
+
+	//获取拟合数据
+	double x[320];
+	i = 0;
+	for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
+	{
+		x[i] = *iter;
+	}
+	
+	double info[LM_INFO_SZ];
+	// 调用迭代入口函数
+	int ret = dlevmar_der(expfun,	//描述测量值之间关系的函数指针
+		jacexpfun,					//估计雅克比矩阵的函数指针
+		p,							//初始化的待求参数，结果一并保存在其中
+		x,							//测量值
+		m,							//参数维度
+		n,							//测量值维度
+		1000,						//最大迭代次数
+		NULL,						//opts,       //迭代的一些参数
+		info,						//关于最小化结果的一些参数，不需要设为NULL
+		NULL, NULL, NULL			//一些内存的指针，暂时不需要
+		);
+	printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
+	printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
+	printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));
+
+	i = 0;
+	for (auto gp : waveParam)
+	{
+		gp.A = p[i++];
+		gp.b = p[i++];
+		gp.sigma = p[i++];
+	}
 
 };
 

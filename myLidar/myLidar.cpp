@@ -5,6 +5,24 @@
 #include "WaveData.h"
 using namespace std;
 
+
+//判断帧头是否正确
+bool isHeaderRight(uint8_t header[8])
+{
+	uint8_t headerSign[] = { 1, 35, 69, 103, 137, 171, 205, 239 };
+	bool returnVal = true;
+	for (size_t i = 0; i < 8; i++)
+	{
+		if (header[i] != headerSign[i])
+		{
+			returnVal = false;
+			break;
+		}
+	}
+	return returnVal;
+}
+
+
 int main()
 {
 	char filename[100];
@@ -36,7 +54,7 @@ int main()
 			mywave.GetData(hs);
 			mywave.Filter(mywave.m_BlueWave);
 			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra);
-
+			mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
 		}
 
 		j++;

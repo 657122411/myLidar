@@ -39,6 +39,18 @@
     <ClInclude Include="WaveData.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="levmar-2.6\compiler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="levmar-2.6\levmar.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="levmar-2.6\lm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="levmar-2.6\misc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -55,6 +67,15 @@
     </ClCompile>
     <ClCompile Include="TimeConvert.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="levmar-2.6\Axb.c">
+      <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="levmar-2.6\lm.c">
+      <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="levmar-2.6\misc.c">
+      <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
