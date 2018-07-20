@@ -28,7 +28,7 @@ void gau_kernel(float kernel[], int size, float sigma)
 }
 
 
-/*功能： 高斯模糊
+/*功能:	 高斯模糊
 //src：  输入原图
 //dst：  模糊图像
 //size： 核的大小
@@ -105,6 +105,7 @@ WaveData::~WaveData()
 */
 void WaveData::GetData(HS_Lidar &hs)
 {
+	//GPS->UTC->BeiJing
 	PGPSTIME pgt = new GPSTIME;
 	PCOMMONTIME pct = new COMMONTIME;
 	pgt->wn = (int)hs.header.nGPSWeek;
@@ -120,6 +121,7 @@ void WaveData::GetData(HS_Lidar &hs)
 	delete pgt;
 	delete pct;
 
+	//取蓝绿通道
 	m_BlueWave.assign(&hs.CH2.nD0[0], &hs.CH2.nD0[320]);
 	m_GreenWave.assign(&hs.CH3.nD0[0], &hs.CH3.nD0[320]);
 
@@ -131,6 +133,7 @@ void WaveData::GetData(HS_Lidar &hs)
 */
 void WaveData::Filter(vector<float> &srcWave)
 {
+	//高斯滤波去噪
 	vector<float> dstWave;
 	dstWave.assign(srcWave.begin(), srcWave.end());
 	gaussian(&srcWave[0], &dstWave[0]);
@@ -153,7 +156,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		data[i] = *iter;
 	}
 	
-	//计算噪声最小值
+	//计算噪声最小值为环境噪声
 	float min = data[0];
 	for (m = 0; m < 320; m++)
 	{
@@ -162,16 +165,18 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 			min = data[m];
 	}
 
-	//除去噪声
+	//所有数据除去环境噪声
 	for (m = 0; m < 320; m++)
 	{
 		temp[m] -= min;
 	}
 	srcWave.assign(&temp[0],&temp[320]);
 
-	//高斯分量
-	float A;//振幅
-	float b, tg, tgl, tgr;//脉冲距离，峰值时间位置，半峰时间位置（左右）
+	float A;	//振幅
+	float b;	//脉冲距离
+	float tg;	//峰值时间位置
+	float tgl;	//半峰时间位置（左)
+	float tgr;	//半峰时间位置（右）
 
 	//循环剥离过程
 	do
@@ -216,7 +221,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		//计算sigma
 		float sigma = fabs(tg - b) / sqrt(2 * log(2));
 
-		//保存高斯分量参数
+		//将该组高斯分量参数压入向量
 		GaussParameter param{A,b,sigma};
 		waveParam.push_back(param);
 
@@ -246,8 +251,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	} while (A >= 1.5*20/*Gnoise*/);//循环条件!!!值得探讨
 
 
-	//对高斯分量做筛选（时间间隔小于一定值的剔除能量较小的分量）
-	//先将差值过小vector对象的sigma值设为0
+	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
 	for (int i = 0; i<waveParam.size() - 1; i++)
 	{
 		for (int j = i + 1; j < waveParam.size(); j++)
@@ -266,7 +270,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		}
 	}
 
-	//再将sigma为0值的分量删除
+	//再将sigma为0值的分量剔除
 	for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end();)
 	{
 		if (gaussPraIter->sigma == 0)
@@ -289,7 +293,8 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 */
 void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam)
 {
-	if (waveParam.size()!=2)//解算的高斯分量不等于两个则不优化
+	//解算的高斯分量组数不等于两个则不优化
+	if (waveParam.size()!=2)
 	{
 		return;
 	}
@@ -331,6 +336,7 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 	printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
 	printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));
 
+	//将优化后的参数组赋给vector
 	i = 0;
 	for (auto gp : waveParam)
 	{
