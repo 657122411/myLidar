@@ -69,6 +69,7 @@ void GPSTimeToCommonTime(PGPSTIME pgt, PCOMMONTIME pct)//GPS时到通用时的转换
 	PJULIANDAY pjd = new JULIANDAY;
 	GPSTimeToJulianDay(pgt, pjd);
 	JulianDayToCommonTime(pjd, pct);
+	delete pjd;//删除new指针，不然引起内存泄漏
 }
 
 void CommonTimeToDOY(PCOMMONTIME pct, PDOY pdoy)
