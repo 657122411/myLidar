@@ -1,5 +1,9 @@
 #include "WaveData.h"
 
+#define PulseWidth 4		//定义激光脉冲宽度做剥离阈值参考
+#define TimeDifference 8	//与UTC的时差
+
+
 /*功能：  高斯核生成
 //kernel：存储生成的高斯核
 //size：  核的大小
@@ -115,7 +119,7 @@ void WaveData::GetData(HS_Lidar &hs)
 	m_time.year = pct->year;
 	m_time.month = pct->month;
 	m_time.day = pct->day;
-	m_time.hour = pct->hour+8;	//直接转化为北京时间
+	m_time.hour = pct->hour + TimeDifference;	//直接转化为北京时间
 	m_time.minute = pct->minute;
 	m_time.second = pct->second;
 	delete pgt;
@@ -248,7 +252,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 
 		//获取向量中所存结构体的第一个波峰值作阈值参考量
 		gaussPraIter = waveParam.begin();
-	} while (A >= 1.5*20/*Gnoise*/);//循环条件!!!值得探讨
+	} while (A >= 20/*Gnoise*/);//循环条件!!!值得探讨
 
 
 	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
@@ -256,7 +260,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	{
 		for (int j = i + 1; j < waveParam.size(); j++)
 		{
-			if (abs(waveParam.at(i).b - waveParam.at(j).b) < 5)
+			if (abs(waveParam.at(i).b - waveParam.at(j).b) < PulseWidth)//Key
 			{
 				if (waveParam.at(i).A >= waveParam.at(j).A)
 				{
@@ -332,20 +336,43 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 		info,						//关于最小化结果的一些参数，不需要设为NULL
 		NULL, NULL, NULL			//一些内存的指针，暂时不需要
 		);
-	printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
+	/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
 	printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
-	printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));
+	printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
 
 	//将优化后的参数组赋给vector
 	i = 0;
-	for (auto gp : waveParam)
+	
+	for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end();gaussPraIter++)
 	{
-		gp.A = p[i++];
-		gp.b = p[i++];
-		gp.sigma = p[i++];
+		gaussPraIter->A = p[i++];
+		gaussPraIter->b = p[i++];
+		gaussPraIter->sigma = p[i++];
 	}
 
 };
 
+/*功能：	自定义需要输出的信息
+//内容：	年 月 日 时 分 秒 
+*/
+ostream &operator<<(ostream & stream, const WaveData & wavedata)
+{
+	stream << wavedata.m_time.year << " "
+		<< wavedata.m_time.month << " "
+		<< wavedata.m_time.day << " "
+		<< wavedata.m_time.hour << " "
+		<< wavedata.m_time.minute << " "
+		<< wavedata.m_time.second;
 
+	//兴趣数据暂定为蓝色通道的波峰位置
+	if (!wavedata.m_BlueGauPra.empty())
+	{
+		for (auto p : wavedata.m_BlueGauPra)
+		{
+			stream << " "<<p.b;
+		}
+	}
+	stream << " " << endl;
 
+	return stream;
+}

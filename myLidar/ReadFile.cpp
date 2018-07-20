@@ -63,6 +63,8 @@ void ReadFile::readAll()
 			mywave.Filter(mywave.m_BlueWave);
 			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra);
 			mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
+			cout << mywave;
+
 
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
