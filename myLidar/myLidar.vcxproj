@@ -153,6 +153,7 @@
     <ClInclude Include="levmar-2.6\levmar.h" />
     <ClInclude Include="levmar-2.6\lm.h" />
     <ClInclude Include="levmar-2.6\misc.h" />
+    <ClInclude Include="ReadFile.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TimeConvert.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="levmar-2.6\lm.c" />
     <ClCompile Include="levmar-2.6\misc.c" />
     <ClCompile Include="myLidar.cpp" />
+    <ClCompile Include="ReadFile.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="TimeConvert.cpp" />
     <ClCompile Include="WaveData.cpp" />

@@ -51,6 +51,9 @@
     <ClInclude Include="levmar-2.6\misc.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ReadFile.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -76,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="levmar-2.6\misc.c">
       <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ReadFile.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

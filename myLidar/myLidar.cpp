@@ -3,71 +3,26 @@
 
 #include "stdafx.h"
 #include "WaveData.h"
+#include "ReadFile.h"
 using namespace std;
-
-
-//判断帧头是否正确
-bool isHeaderRight(uint8_t header[8])
-{
-	uint8_t headerSign[] = { 1, 35, 69, 103, 137, 171, 205, 239 };
-	bool returnVal = true;
-	for (size_t i = 0; i < 8; i++)
-	{
-		if (header[i] != headerSign[i])
-		{
-			returnVal = false;
-			break;
-		}
-	}
-	return returnVal;
-}
-
 
 int main()
 {
-	char filename[100];
-
-	cout << "请输入你要打开的文件路径，如c:\\temp.txt：" << endl;
-	cin >> filename;
-	FILE * mf;
-	mf = fopen(filename, "rb");
-	if (mf == NULL)
+	int flag = 1;
+	while (flag)
 	{
-		printf("读取文件出错");
-		return 0;
-	}
-
-	unsigned int j = 0;
-	HS_Lidar hs;
-	//遍历文件获取数据
-	do {
-		_fseeki64(mf, j * 8, SEEK_SET);
-
-		uint8_t header[8];
-		memset(header, 0, sizeof(uint8_t) * 8);
-		fread(header, sizeof(uint8_t), 8, mf);
-		if (isHeaderRight(header))
+		cout << "file address:"<<endl;
+		char name[100];
+		cin >> name;
+		ReadFile myfile;
+		bool ret = myfile.setFilename(name);
+		if (ret)
 		{
-			_fseeki64(mf, -8, SEEK_CUR);
-			hs.initData(mf);
-			WaveData mywave;
-			mywave.GetData(hs);
-			mywave.Filter(mywave.m_BlueWave);
-			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra);
-			mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
+			myfile.readAll();
 		}
-
-		j++;
-	} while (!feof(mf));
-
-	//文件结束退出
-	if (feof(mf) == 1)
-	{
-		cout << "读取结束！" << endl;
-		system("pause");
-		exit(0);
+		cout << "continue?(1/0)" << endl;
+		cin >> flag;
 	}
-
-    return 0;
+	
+	return 0;
 }
-

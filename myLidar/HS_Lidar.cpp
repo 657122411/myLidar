@@ -142,11 +142,11 @@ void HS_Lidar::getChannel(FILE *fp, HS_Lidar_Channel &CH) {
 			fread(&CH.nL1, sizeof(uint16_t), 1, fp);
 			CH.nL1 = Swap16(CH.nL1);
 
+			//CH_Data1的数据在这里并没有使用
 			uint16_t *Ch_Data1 = new uint16_t[CH.nL1];
 			fread(Ch_Data1, CH.nL1 * sizeof(uint16_t), 1, fp);
 			DataInt16Swap16(Ch_Data1, CH.nL1);
-
-
+			
 			if (Ch_Data1 != NULL)
 			{
 				delete[] Ch_Data1;
