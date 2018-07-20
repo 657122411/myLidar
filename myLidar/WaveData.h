@@ -40,6 +40,8 @@ public:
 	void Resolve(vector<float> &srcWave,vector<GaussParameter> &waveParam);	//分解高斯分量参数
 	void Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam);//迭代优化（LM）
 
+	friend ostream &operator<<(ostream &stream, const WaveData &wavedata);	//自定义输出信息
+
 	Time m_time;									//UTC时间
 	vector<float> m_BlueWave;						//CH2通道数据
 	vector<float> m_GreenWave;						//CH3通道数据
