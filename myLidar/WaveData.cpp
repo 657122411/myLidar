@@ -100,7 +100,11 @@ WaveData::WaveData()
 
 WaveData::~WaveData()
 {
-
+	//手动释放vector内存，不知道有没有必要性
+	vector<float>().swap(m_BlueWave);
+	vector<float>().swap(m_GreenWave);
+	vector<GaussParameter>().swap(m_BlueGauPra);
+	vector<GaussParameter>().swap(m_GreenGauPra);
 };
 
 
