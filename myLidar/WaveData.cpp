@@ -376,7 +376,7 @@ ostream &operator<<(ostream & stream, const WaveData & wavedata)
 			stream << " "<<p.b;
 		}
 	}
-	stream << " " << endl;
+	stream << endl;
 
 	return stream;
 }
