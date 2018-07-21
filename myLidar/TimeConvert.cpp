@@ -6,7 +6,7 @@ double FRAC(double morigin)
 	return morigin - long(morigin);// È¡Ð¡Êý²¿·Ö
 }
 
-void CommonTimeToJulianDay(PCOMMONTIME pct, PJULIANDAY pjd) //Í¨ÓÃÊ±µ½ÈåÂÔÈÕµÄ×ª»»
+void CommonTimeToJulianDay(PCOMMONTIME pct, PJULIANDAY pjd) 
 {
 	if (pct->year<1900)
 	{
@@ -25,7 +25,7 @@ void CommonTimeToJulianDay(PCOMMONTIME pct, PJULIANDAY pjd) //Í¨ÓÃÊ±µ½ÈåÂÔÈÕµÄ×ª
 	pjd->tod.tos = pct->second - (int)pct->second;//ÃëµÄÐ¡Êý²¿·Ö
 }
 
-void JulianDayToCommonTime(PJULIANDAY pjd, PCOMMONTIME pct)//ÈåÂÔÈÕµ½Í¨ÓÃÊ±µÄ×ª»»
+void JulianDayToCommonTime(PJULIANDAY pjd, PCOMMONTIME pct)
 {
 	double x = pjd->day + (pjd->tod.sn + pjd->tod.tos) / (60.0*60.0 * 24);
 	int a = int(x + 0.5);
@@ -42,7 +42,7 @@ void JulianDayToCommonTime(PJULIANDAY pjd, PCOMMONTIME pct)//ÈåÂÔÈÕµ½Í¨ÓÃÊ±µÄ×ª»
 	int N = a % 7;
 }
 
-void JulianDayToGPSTime(PJULIANDAY pjd, PGPSTIME pgt)//ÈåÂÔÈÕµ½GPSÊ±µÄ×ª»»
+void JulianDayToGPSTime(PJULIANDAY pjd, PGPSTIME pgt)
 {
 	double x = pjd->day + (pjd->tod.sn + pjd->tod.tos) / (60.0*60.0 * 24);
 	pgt->wn = int((x - 2444244.5) / 7);
@@ -50,21 +50,22 @@ void JulianDayToGPSTime(PJULIANDAY pjd, PGPSTIME pgt)//ÈåÂÔÈÕµ½GPSÊ±µÄ×ª»»
 	pgt->tow.tos = pjd->tod.tos;
 }
 
-void GPSTimeToJulianDay(PGPSTIME pgt, PJULIANDAY pjd)//GPSÊ±µ½ÈåÂÔÈÕµÄ×ª»»
+void GPSTimeToJulianDay(PGPSTIME pgt, PJULIANDAY pjd)
 {
 	pjd->day = int(pgt->wn * 7 + double(pgt->tow.sn) / 86400.0 + 2444244.5);
 	pjd->tod.sn = (pgt->tow.sn + 43200) % 86400;
 	pjd->tod.tos = pgt->tow.tos;
 }
 
-void CommonTimeToGPSTime(PCOMMONTIME pct, PGPSTIME pgt)//Í¨ÓÃÊ±µ½GPSÊ±µÄ×ª»»
+void CommonTimeToGPSTime(PCOMMONTIME pct, PGPSTIME pgt)
 {
 	PJULIANDAY pjd = new JULIANDAY;
 	CommonTimeToJulianDay(pct, pjd);
 	JulianDayToGPSTime(pjd, pgt);
+	delete pjd;
 }
 
-void GPSTimeToCommonTime(PGPSTIME pgt, PCOMMONTIME pct)//GPSÊ±µ½Í¨ÓÃÊ±µÄ×ª»»
+void GPSTimeToCommonTime(PGPSTIME pgt, PCOMMONTIME pct)
 {
 	PJULIANDAY pjd = new JULIANDAY;
 	GPSTimeToJulianDay(pgt, pjd);
@@ -98,11 +99,16 @@ void CommonTimeToDOY(PCOMMONTIME pct, PDOY pdoy)
 
 	pdoy->tod.sn = long(pct->hour * 3600
 		+ pct->minute * 60 + pct->second);
-	pdoy->tod.tos = pct->second - int(pct->second);    /*pct->hour*3600
-													   +pct->minute*60+pct->second-pdoy->tod.sn;*/
+	pdoy->tod.tos = pct->second - int(pct->second);    
+	/*pct->hour*3600+pct->minute*60+pct->second-pdoy->tod.sn;*/
+	
+	delete pcto;
+	delete pjdo;
+	delete pjd;
+
 }
 
-void DOYToCommonTime(PDOY pdoy, PCOMMONTIME pct)//Äê»ýÈÕµ½Í¨ÓÃÊ±
+void DOYToCommonTime(PDOY pdoy, PCOMMONTIME pct)
 {
 	PCOMMONTIME pcto = new COMMONTIME;
 	pcto->year = pdoy->year;
@@ -130,22 +136,30 @@ void DOYToCommonTime(PDOY pdoy, PCOMMONTIME pct)//Äê»ýÈÕµ½Í¨ÓÃÊ±
 		- pct->hour * 3600) / 60);
 	pct->second = pdoy->tod.sn + pdoy->tod.tos
 		- pct->hour * 3600 - pct->minute * 60;
+
+	delete pcto;
+	delete pjdo;
 }
 
-void GPSTimeToDOY(PGPSTIME pgt, PDOY pdoy)//GPSÊ±µ½Äê»ýÈÕ
+void GPSTimeToDOY(PGPSTIME pgt, PDOY pdoy)
 {
 	PJULIANDAY pjd = new JULIANDAY;
 	GPSTimeToJulianDay(pgt, pjd);
 	PCOMMONTIME pct = new COMMONTIME;
 	JulianDayToCommonTime(pjd, pct);
 	CommonTimeToDOY(pct, pdoy);
+
+	delete pjd;
+	delete pct;
 }
 
-void DOYToGPSTime(PDOY pdoy, PGPSTIME pgt)//Äê»ýÈÕµ½GPSÊ±
+void DOYToGPSTime(PDOY pdoy, PGPSTIME pgt)
 {
 	PCOMMONTIME pct = new COMMONTIME;
 	DOYToCommonTime(pdoy, pct);
 	CommonTimeToGPSTime(pct, pgt);
+
+	delete pct;
 }
 
 void JulianDayToDOY(PJULIANDAY pjd, PDOY pdoy)
@@ -153,6 +167,8 @@ void JulianDayToDOY(PJULIANDAY pjd, PDOY pdoy)
 	PCOMMONTIME pct = new COMMONTIME;
 	JulianDayToCommonTime(pjd, pct);
 	CommonTimeToDOY(pct, pdoy);
+
+	delete pct;
 }
 
 void DOYToJulianDay(PDOY pdoy, PJULIANDAY pjd)
@@ -160,4 +176,6 @@ void DOYToJulianDay(PDOY pdoy, PJULIANDAY pjd)
 	PCOMMONTIME pct = new COMMONTIME;
 	DOYToCommonTime(pdoy, pct);
 	CommonTimeToJulianDay(pct, pjd);
+
+	delete pct;
 }

@@ -63,32 +63,32 @@ typedef struct tagDOY
 
 typedef DOY *PDOY;
 
-double FRAC(double morigin);
+double FRAC(double morigin);// 取小数部分
 
 
-void CommonTimeToJulianDay(PCOMMONTIME pct, PJULIANDAY pjd);
+void CommonTimeToJulianDay(PCOMMONTIME pct, PJULIANDAY pjd);//通用时到儒略日的转换
 
-void JulianDayToCommonTime(PJULIANDAY pjd, PCOMMONTIME pct);
+void JulianDayToCommonTime(PJULIANDAY pjd, PCOMMONTIME pct);//儒略日到通用时的转换
 
-void JulianDayToGPSTime(PJULIANDAY pjd, PGPSTIME pgt);
+void JulianDayToGPSTime(PJULIANDAY pjd, PGPSTIME pgt);//儒略日到GPS时的转换
 
-void GPSTimeToJulianDay(PGPSTIME pgt, PJULIANDAY pjd);
+void GPSTimeToJulianDay(PGPSTIME pgt, PJULIANDAY pjd);//GPS时到儒略日的转换
 
-void CommonTimeToGPSTime(PCOMMONTIME pct, PGPSTIME pgt);
+void CommonTimeToGPSTime(PCOMMONTIME pct, PGPSTIME pgt);//通用时到GPS时的转换
 
-void GPSTimeToCommonTime(PGPSTIME pgt, PCOMMONTIME pct);
+void GPSTimeToCommonTime(PGPSTIME pgt, PCOMMONTIME pct);//GPS时到通用时的转换
 
-void CommonTimeToDOY(PCOMMONTIME pct, PDOY pdoy);
+void CommonTimeToDOY(PCOMMONTIME pct, PDOY pdoy);//通用时到年积日
 
-void DOYToCommonTime(PDOY pdoy, PCOMMONTIME pct);
+void DOYToCommonTime(PDOY pdoy, PCOMMONTIME pct);//年积日到通用时
 
-void GPSTimeToDOY(PGPSTIME pgt, PDOY pdoy);
+void GPSTimeToDOY(PGPSTIME pgt, PDOY pdoy);//GPS时到年积日
 
-void DOYToGPSTime(PDOY pdoy, PGPSTIME pgt);
+void DOYToGPSTime(PDOY pdoy, PGPSTIME pgt);//年积日到GPS时
 
-void JulianDayToDOY(PJULIANDAY pjd, PDOY pdoy);
+void JulianDayToDOY(PJULIANDAY pjd, PDOY pdoy);//儒略日到年积日
 
-void DOYToJulianDay(PDOY pdoy, PJULIANDAY pjd);
+void DOYToJulianDay(PDOY pdoy, PJULIANDAY pjd);//年积日到儒略日
 
 
 #endif
