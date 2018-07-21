@@ -36,8 +36,8 @@ public:
 	WaveData();
 	~WaveData();
 	void GetData(HS_Lidar &hs);												//截取兴趣数据
-	void Filter(vector<float> &srcWave);									//滤波平滑
-	void Resolve(vector<float> &srcWave,vector<GaussParameter> &waveParam);	//分解高斯分量参数
+	void Filter(vector<float> &srcWave,float &noise);						//滤波平滑
+	void Resolve(vector<float> &srcWave,vector<GaussParameter> &waveParam,float &noise);	//分解高斯分量参数
 	void Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam);//迭代优化（LM）
 
 	friend ostream &operator<<(ostream &stream, const WaveData &wavedata);	//自定义输出信息
@@ -45,6 +45,8 @@ public:
 	Time m_time;									//UTC时间
 	vector<float> m_BlueWave;						//CH2通道数据
 	vector<float> m_GreenWave;						//CH3通道数据
+	float m_BlueNoise;								//CH2通道的随机噪声
+	float m_GreenNoise;								//CH3通道的随机噪声
 	vector<GaussParameter> m_BlueGauPra;			//CH2数据高斯分量参数
 	vector<GaussParameter> m_GreenGauPra;			//CH3数据高斯分量参数
 	vector<GaussParameter>::iterator gaussPraIter;	//高斯参数结构体迭代器

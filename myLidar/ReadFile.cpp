@@ -73,8 +73,8 @@ void ReadFile::readAll()
 
 			WaveData mywave;
 			mywave.GetData(hs);
-			mywave.Filter(mywave.m_BlueWave);
-			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra);
+			mywave.Filter(mywave.m_BlueWave, mywave.m_BlueNoise);
+			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra,mywave.m_BlueNoise);
 			mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
 			
 			//输出信息到文件

@@ -98,6 +98,7 @@ WaveData::WaveData()
 
 };
 
+
 WaveData::~WaveData()
 {
 	//手动释放vector内存，不知道有没有必要性
@@ -136,17 +137,26 @@ void WaveData::GetData(HS_Lidar &hs)
 };
 
 
-/*功能：		去噪滤波函数
+/*功能：		预处理函数进行去噪滤波操作
 //&srcWave:	通道原始数据
+//&noise：	记录的噪声所属波段
 */
-void WaveData::Filter(vector<float> &srcWave)
+void WaveData::Filter(vector<float> &srcWave, float &noise)
 {
 	//高斯滤波去噪
 	vector<float> dstWave;
 	dstWave.assign(srcWave.begin(), srcWave.end());
 	gaussian(&srcWave[0], &dstWave[0]);
+
+	noise = 0;
+	//计算随机噪声:两次滤波前后的波形数据的峰值差的均方差（标准差）
+	for (int i = 0; i < srcWave.size();i++)
+	{
+		noise += (srcWave.at(i) - dstWave.at(i)) * (srcWave.at(i) - dstWave.at(i));
+	}
+	noise = sqrt(noise / srcWave.size());
+
 	srcWave.assign(dstWave.begin(), dstWave.end());
-	dstWave.clear();
 };
 
 
@@ -154,7 +164,7 @@ void WaveData::Filter(vector<float> &srcWave)
 //&srcWave:		通道原始数据
 //&waveParam：	该通道的高斯分量参数
 */
-void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam)
+void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam, float &noise)
 {
 	//拷贝原始数据
 	float data[320],temp[320];
@@ -164,19 +174,19 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		data[i] = *iter;
 	}
 	
-	//计算噪声最小值为环境噪声
-	float min = data[0];
+	//将滤波后的数据最小值作为背景噪声
+	float backgroundNoise = data[0];
 	for (m = 0; m < 320; m++)
 	{
 		temp[m] = data[m];
-		if (data[m] < min)	
-			min = data[m];
+		if (data[m] < backgroundNoise)
+			backgroundNoise = data[m];
 	}
 
 	//所有数据除去环境噪声
 	for (m = 0; m < 320; m++)
 	{
-		temp[m] -= min;
+		temp[m] -= backgroundNoise;
 	}
 	srcWave.assign(&temp[0],&temp[320]);
 
@@ -254,9 +264,8 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 			}
 		}
 
-		//获取向量中所存结构体的第一个波峰值作阈值参考量
-		gaussPraIter = waveParam.begin();
-	} while (A >= 20/*Gnoise*/);//循环条件!!!值得探讨
+		
+	} while (A >3*noise);//循环条件!!!值得探讨
 
 
 	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
