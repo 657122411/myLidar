@@ -10,8 +10,8 @@ public:
 	ReadFile();
 	~ReadFile();
 	bool setFilename(char filename[100]);
-	void readAll();
-	void readByTime();
+	void readBlueAll();
+	void readGreenAll();
 private:
 	char *m_filename;
 	FILE *m_filePtr;
