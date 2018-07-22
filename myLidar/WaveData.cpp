@@ -3,6 +3,10 @@
 #define PulseWidth 4		//定义激光脉冲宽度做剥离阈值参考
 #define TimeDifference 8	//与UTC的时差
 
+#define BLUE true
+#define GREEN false
+
+bool WaveData::ostreamFlag = BLUE;
 
 /*功能：  高斯核生成
 //kernel：存储生成的高斯核
@@ -299,7 +303,6 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 			++gaussPraIter;
 		}
 	}
-
 };
 
 
@@ -354,8 +357,7 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 	printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
 
 	//将优化后的参数组赋给vector
-	i = 0;
-	
+	i = 0;	
 	for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end();gaussPraIter++)
 	{
 		gaussPraIter->A = p[i++];
@@ -377,15 +379,31 @@ ostream &operator<<(ostream & stream, const WaveData & wavedata)
 		<< wavedata.m_time.minute << " "
 		<< wavedata.m_time.second;
 
-	//兴趣数据暂定为蓝色通道的波峰位置
-	if (!wavedata.m_BlueGauPra.empty())
+	//兴趣数据暂定为制定通道的波峰所在相对位置
+	switch (wavedata.ostreamFlag)
 	{
-		for (auto p : wavedata.m_BlueGauPra)
+	case BLUE: {
+		if (!wavedata.m_BlueGauPra.empty())
 		{
-			stream << " "<<p.b;
+			for (auto p : wavedata.m_BlueGauPra)
+			{
+				stream << " " << p.b;
+			}
 		}
+		break;
 	}
-	stream << endl;
+	case GREEN: {
+		if (!wavedata.m_GreenGauPra.empty())
+		{
+			for (auto p : wavedata.m_GreenGauPra)
+			{
+				stream << " " << p.b;
+			}
+		}
+		break;
+	}
+	}
 
+	stream << endl;
 	return stream;
 }
