@@ -18,9 +18,26 @@ int main()
 		bool ret = myfile.setFilename(name);
 		if (ret)
 		{
-			myfile.readAll();
+			cout << "Channel?(0:Blue/1:Green/2:All):" << endl;
+			cin >> flag;
+			switch(flag)
+			{
+			case 0: {
+				myfile.readBlueAll();
+				break;
+			}
+			case 1:{
+				myfile.readGreenAll();
+				break;
+			}
+			case 2: {
+				myfile.readBlueAll();
+				myfile.readGreenAll();
+				break;
+			}
+			}
 		}
-		cout << "continue?(1/0)" << endl;
+		cout << "continue?(1:Y/0:N):" << endl;
 		cin >> flag;
 	}
 	
