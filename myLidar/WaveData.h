@@ -7,7 +7,6 @@
 #include "levmar.h"
 using namespace std;
 
-
 //UTC时间结构体
 struct Time
 {
@@ -19,7 +18,6 @@ struct Time
 	int second;
 };
 
-
 //高斯函数参数结构体
 struct GaussParameter
 {
@@ -27,7 +25,6 @@ struct GaussParameter
 	float b;	//脉冲距离(对称轴)
 	float sigma;//脉冲宽度（宽幅）
 };
-
 
 //波形数据类
 class WaveData
@@ -40,6 +37,7 @@ public:
 	void Resolve(vector<float> &srcWave,vector<GaussParameter> &waveParam,float &noise);	//分解高斯分量参数
 	void Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam);//迭代优化（LM）
 
+	static bool ostreamFlag;												//控制流输出的兴趣通道数据
 	friend ostream &operator<<(ostream &stream, const WaveData &wavedata);	//自定义输出信息
 
 	Time m_time;									//UTC时间
