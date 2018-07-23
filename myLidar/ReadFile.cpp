@@ -98,7 +98,7 @@ void ReadFile::readBlueAll()
 
 			//打印处理进程情况
 			cout.width(3);
-			cout << int(100 * 8 * j / length) << "%";
+			cout << int(/*100 * 8 **/ j / (length / 800)) << "%";
 			cout << "\b\b\b\b";
 
 		}
@@ -168,7 +168,7 @@ void ReadFile::readGreenAll()
 
 			//打印处理进程情况
 			cout.width(3);
-			cout << int(100 * 8 * j / length) << "%";
+			cout << int(/*100 * 8 **/ j / (length/800)) << "%";
 			cout << "\b\b\b\b";
 
 		}
