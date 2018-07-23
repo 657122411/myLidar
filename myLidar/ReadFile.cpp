@@ -28,6 +28,10 @@ ReadFile::~ReadFile()
 {
 }
 
+/*功能：	设置读取文件的指针
+//in:	读取文件的绝对路径
+//out:	将该路径赋给文件指针
+*/
 bool ReadFile::setFilename(char filename[100])
 {
 	m_filename = filename;
@@ -44,6 +48,10 @@ bool ReadFile::setFilename(char filename[100])
 	}
 }
 
+
+/*功能：	处理全数据蓝色通道
+//out:	读取通道数据滤波去噪分解优化输出
+*/
 void ReadFile::readBlueAll()
 {
 	unsigned int j = 0;
@@ -111,6 +119,9 @@ void ReadFile::readBlueAll()
 }
 
 
+/*功能：	处理全数据绿色通道
+//out:	读取通道数据滤波去噪分解优化输出
+*/
 void ReadFile::readGreenAll()
 {
 	unsigned int j = 0;
