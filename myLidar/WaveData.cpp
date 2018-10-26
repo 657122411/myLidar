@@ -6,6 +6,9 @@
 #define BLUE true
 #define GREEN false
 
+#define c 0.3				//相对光速乘以纳秒
+#define nwater 1.334				//水质的折射率
+
 bool WaveData::ostreamFlag = BLUE;
 
 /*功能：  高斯核生成
@@ -568,7 +571,37 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 	}
 
 	return;
-};
+}
+
+
+/*功能：	计算水深
+//内容：	提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深
+*/
+void WaveData::calculateDepth(vector<GaussParameter>& waveParam, float &BorGDepth)
+{
+	if ((waveParam.size() <= 1)|| (waveParam.size() >= 5))
+	{
+		BorGDepth=0;
+	}
+	else
+	{
+		gaussPraIter = waveParam.begin();
+		float tbegin = gaussPraIter->b;
+		float tend = tbegin;
+		for (gaussPraIter = waveParam.begin()+1; gaussPraIter != waveParam.end(); gaussPraIter++)
+		{
+			if (gaussPraIter->b > tend)
+			{
+				tend = gaussPraIter->b;
+			}
+		}
+		//gaussPraIter = waveParam.end()-1;			//!!!坑
+		//float tend = gaussPraIter->b;
+
+		BorGDepth = c*(tend - tbegin) / (2 * nwater);
+	}
+}
+;
 
 /*功能：	自定义需要输出的信息
 //内容：	年 月 日 时 分 秒 
@@ -586,6 +619,8 @@ ostream &operator<<(ostream & stream, const WaveData & wavedata)
 	switch (wavedata.ostreamFlag)
 	{
 	case BLUE: {
+		stream << " " << wavedata.blueDepth<<"m";
+
 		if (!wavedata.m_BlueGauPra.empty())
 		{
 			for (auto p : wavedata.m_BlueGauPra)
@@ -596,6 +631,7 @@ ostream &operator<<(ostream & stream, const WaveData & wavedata)
 		break;
 	}
 	case GREEN: {
+		stream << " " << wavedata.greenDepth << "m";
 		if (!wavedata.m_GreenGauPra.empty())
 		{
 			for (auto p : wavedata.m_GreenGauPra)
@@ -610,3 +646,4 @@ ostream &operator<<(ostream & stream, const WaveData & wavedata)
 	stream << endl;
 	return stream;
 }
+

@@ -210,3 +210,8 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/myLidar.VC.VC.opendb
+/myLidar.VC.db
+/myLidar/levmar-2.6
+/myLidar/GreenOutput.txt
+/myLidar/BlueOut.txt

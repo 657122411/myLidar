@@ -71,7 +71,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\CUGtjh\Documents\Visual Studio 2015\Projects\myLidar\myLidar\levmar-2.6;$(IncludePath)</IncludePath>
+    <IncludePath>D:\mylevmar;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\buildout\lib;D:\mylevmar\build\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -93,6 +94,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>levmar.lib;blas.lib;lapack.lib;libf2c.lib;tmglib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

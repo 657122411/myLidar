@@ -48,6 +48,10 @@ public:
 	vector<GaussParameter> m_BlueGauPra;			//CH2数据高斯分量参数
 	vector<GaussParameter> m_GreenGauPra;			//CH3数据高斯分量参数
 	vector<GaussParameter>::iterator gaussPraIter;	//高斯参数结构体迭代器
+
+	float blueDepth;								//CH2通道的计算水深
+	float greenDepth;								//CH3通道的计算水深
+	void calculateDepth(vector<GaussParameter> &waveParam,float &BorGDepth);	//根据回波数据计算水深
 };
 
 

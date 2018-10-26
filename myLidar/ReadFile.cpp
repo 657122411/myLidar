@@ -90,6 +90,8 @@ void ReadFile::readBlueAll()
 			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra,mywave.m_BlueNoise);
 			mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
 			
+			mywave.calculateDepth(mywave.m_BlueGauPra,mywave.blueDepth);
+
 			//输出信息到文件
 			output_stream << mywave;
 
@@ -159,6 +161,8 @@ void ReadFile::readGreenAll()
 			mywave.Filter(mywave.m_GreenWave, mywave.m_GreenNoise);
 			mywave.Resolve(mywave.m_GreenWave, mywave.m_GreenGauPra, mywave.m_GreenNoise);
 			mywave.Optimize(mywave.m_GreenWave, mywave.m_GreenGauPra);
+
+			mywave.calculateDepth(mywave.m_GreenGauPra, mywave.greenDepth);
 
 			//输出信息到文件
 			output_stream << mywave;
