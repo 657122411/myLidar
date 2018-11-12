@@ -384,7 +384,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	{
 		for (int j = i + 1; j < waveParam.size(); j++)
 		{
-			if (abs(waveParam.at(i).b - waveParam.at(j).b) < (3*PulseWidth/2))//Key:´óÓÚÈý±¶Âö³å°ë¿í
+			if (abs(waveParam.at(i).b - waveParam.at(j).b) < PulseWidth)//Key
 			{
 				if (waveParam.at(i).A >= waveParam.at(j).A)
 				{
