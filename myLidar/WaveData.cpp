@@ -588,11 +588,15 @@ void WaveData::calculateDepth(vector<GaussParameter>& waveParam, float &BorGDept
 		gaussPraIter = waveParam.begin();
 		float tbegin = gaussPraIter->b;
 		float tend = tbegin;
+
+		int flag = 0;
 		for (gaussPraIter = waveParam.begin()+1; gaussPraIter != waveParam.end(); gaussPraIter++)
 		{
-			if (gaussPraIter->b > tend)
+			
+			if ((gaussPraIter->b > tend)&&(flag<2))//水底回波必定出现在水表回波的后续时刻，为与底部返回噪声区别，假定其与水面回波的回波时差在两个波峰内（考虑水体后向散射）
 			{
 				tend = gaussPraIter->b;
+				flag += 1;
 			}
 		}
 		//gaussPraIter = waveParam.end()-1;			//!!!坑
