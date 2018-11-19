@@ -398,10 +398,10 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		}
 	}
 
-	//再将sigma为0值的分量剔除
+	//再将sigma小于阈值的分量剔除
 	for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end();)
 	{
-		if (gaussPraIter->sigma == 0)
+		if (gaussPraIter->sigma < ((float)PulseWidth/8))
 		{
 			gaussPraIter = waveParam.erase(gaussPraIter);
 		}
