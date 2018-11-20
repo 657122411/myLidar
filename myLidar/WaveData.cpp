@@ -1,4 +1,5 @@
 #include "WaveData.h"
+#include <numeric>
 
 #define PulseWidth 4		//定义激光脉冲宽度做剥离阈值参考
 #define TimeDifference 8	//与UTC的时差
@@ -54,6 +55,30 @@ void gaussian(float src[], float dst[])
 	{
 		dst[i] = src[i - 2] * kernel[0] + src[i - 1] * kernel[1] + src[i] * kernel[2] + src[i + 1] * kernel[3] + src[i + 2] * kernel[4];
 	}
+}
+
+
+/*功能：	计算数据的标准差
+//*:
+//resultSet：传入的数据数组
+//stdev：	返回值为标准差
+//*
+*/
+float calculateSigma(vector<float> resultSet)
+{
+	double sum = std::accumulate(std::begin(resultSet), std::end(resultSet), 0.0);
+	double mean = sum / resultSet.size(); //均值  
+
+	double accum = 0.0;
+	for each (float d in resultSet)
+	{
+		accum += (d - mean)*(d - mean);
+	}
+
+	float stdev = sqrt(accum / (resultSet.size() - 1)); //方差  
+
+	return stdev;
+
 }
 
 
@@ -248,12 +273,84 @@ void WaveData::GetData(HS_Lidar &hs)
 };
 
 
-/*功能：		预处理函数进行去噪滤波操作
+/*功能：		预处理数据：截取有效部分并进行去噪滤波操作
 //&srcWave:	通道原始数据
 //&noise：	记录的噪声所属波段
 */
 void WaveData::Filter(vector<float> &srcWave, float &noise)
 {
+	int m = 30, n=30;//兴趣区域的区间端点
+	vector<float> vm(srcWave.begin(), srcWave.begin() + m);
+	float Svm = calculateSigma(vm);
+
+	//前向后遍历取点
+	for (int i = 30; i < srcWave.size()-1; i++)
+	{
+		if (srcWave.at(i - 1) > srcWave.at(i) && srcWave.at(i) < srcWave.at(i + 1))
+		{
+			m = i;
+			for (int j = i+2; j < srcWave.size() - 1; j++)
+			{
+				if (srcWave.at(j - 1) < srcWave.at(j) && srcWave.at(j) > srcWave.at(j + 1))
+					n = j;
+					break;
+			}
+			if (n > m)
+			{
+				vector<float> v1(srcWave.begin(), srcWave.begin() + m);
+				vector<float> v2(srcWave.begin(), srcWave.begin() + n);
+				float Sv1 = calculateSigma(v1);
+				float Sv2 = calculateSigma(v2);
+				if (Sv1 > 1.5*Svm||Sv2 > 2 * Sv1)
+					break;
+			}
+			
+		}
+	}
+
+
+	int k = 50, l = 50;//兴趣区域的区间端点
+	vector<float> vk(srcWave.end()-k, srcWave.end());
+	float Svk = calculateSigma(vk);
+
+	//后向前遍历取点
+	for (int i = 50; i < srcWave.size() - 1; i++)
+	{
+		if (srcWave.at(320-(i - 1)) > srcWave.at(320-i) && srcWave.at(320-i) < srcWave.at(320-(i + 1)))
+		{
+			k = i;
+			for (int j = i + 2; j < srcWave.size() - 1; j++)
+			{
+				if (srcWave.at(320-(j - 1)) < srcWave.at(320-j) && srcWave.at(320-j) > srcWave.at(320-(j + 1)))
+					l = j;
+				break;
+			}
+			if (l > k)
+			{
+				vector<float> v1(srcWave.end() - k, srcWave.end());
+				vector<float> v2(srcWave.end() - l, srcWave.end());
+				float Sv1 = calculateSigma(v1);
+				float Sv2 = calculateSigma(v2);
+				if (Sv1 > 1.5 * Svk || Sv2 > 2 * Sv1)
+					break;
+			}
+
+		}
+	}
+
+	if ((n + 10) <= (320 - k))
+	{
+		for (int i = m - 1; i >= 0; i--)
+		{
+			srcWave.at(i) = srcWave.at(m);
+		}
+		for (int j = 320 - (k - 1); j <= 319; j++)
+		{
+			srcWave.at(j) = srcWave.at(320 - k);
+		}
+	}
+	
+
 	//高斯滤波去噪
 	vector<float> dstWave;
 	dstWave.assign(srcWave.begin(), srcWave.end());
