@@ -12,6 +12,7 @@ public:
 	bool setFilename(char filename[100]);
 	void readBlueAll();
 	void readGreenAll();
+	void readMix();
 private:
 	char *m_filename;
 	FILE *m_filePtr;

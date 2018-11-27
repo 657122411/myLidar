@@ -26,6 +26,8 @@ struct GaussParameter
 	float sigma;//脉冲宽度（宽幅）
 };
 
+float calculateSigma(vector<float> resultSet);//计算数据的标准差
+
 //波形数据类
 class WaveData
 {

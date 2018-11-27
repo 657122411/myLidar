@@ -18,7 +18,7 @@ int main()
 		bool ret = myfile.setFilename(name);
 		if (ret)
 		{
-			cout << "Channel?(0:Blue/1:Green/2:All):" << endl;
+			cout << "Channel?(0:Blue/1:Green/2:All/3:Mix):" << endl;
 			cin >> flag;
 			switch(flag)
 			{
@@ -33,6 +33,10 @@ int main()
 			case 2: {
 				myfile.readBlueAll();
 				myfile.readGreenAll();
+				break;
+			}
+			case 3: {
+				myfile.readMix();
 				break;
 			}
 			}

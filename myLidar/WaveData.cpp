@@ -1,4 +1,5 @@
 #include "WaveData.h"
+#include <numeric>
 
 #define PulseWidth 4		//定义激光脉冲宽度做剥离阈值参考
 #define TimeDifference 8	//与UTC的时差
@@ -57,6 +58,30 @@ void gaussian(float src[], float dst[])
 }
 
 
+/*功能：	计算数据的标准差
+//*:
+//resultSet：传入的数据数组
+//stdev：	返回值为标准差
+//*
+*/
+float calculateSigma(vector<float> resultSet)
+{
+	double sum = std::accumulate(std::begin(resultSet), std::end(resultSet), 0.0);
+	double mean = sum / resultSet.size(); //均值  
+
+	double accum = 0.0;
+	for each (float d in resultSet)
+	{
+		accum += (d - mean)*(d - mean);
+	}
+
+	float stdev = sqrt(accum / (resultSet.size() - 1)); //方差  
+
+	return stdev;
+
+}
+
+
 /*功能：	假设两组高斯函数模型
 //*p:	代求参数
 //*x：  原始数据（测量值）
@@ -70,8 +95,8 @@ void expfun2(double *p, double *x, int m, int n, void *data)
 	for (i = 0; i<n; ++i)
 	{
 		//写出参数与x[i]之间的关系式，由于这里方程的右边没有观测值，所以只有参数
-		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2])) 
-			 + p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]));
+		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2]))
+			+ p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]));
 	}
 
 }
@@ -114,9 +139,9 @@ void expfun3(double *p, double *x, int m, int n, void *data)
 	for (i = 0; i<n; ++i)
 	{
 		//写出参数与x[i]之间的关系式，由于这里方程的右边没有观测值，所以只有参数
-		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2])) 
-			 + p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]))
-			 + p[6] * exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*(2 * p[8]));
+		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2]))
+			+ p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]))
+			+ p[6] * exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*(2 * p[8]));
 	}
 
 }
@@ -248,12 +273,85 @@ void WaveData::GetData(HS_Lidar &hs)
 };
 
 
-/*功能：		预处理函数进行去噪滤波操作
+/*功能：		预处理数据：截取有效部分并进行去噪滤波操作
 //&srcWave:	通道原始数据
 //&noise：	记录的噪声所属波段
 */
 void WaveData::Filter(vector<float> &srcWave, float &noise)
 {
+	//兴趣数据截取部分,效果暂时不好
+/*	int m = 30, n = 30;//兴趣区域的区间端点
+	vector<float> vm(srcWave.begin(), srcWave.begin() + m);
+	float Svm = calculateSigma(vm);
+
+	//前向后遍历取点
+	for (int i = 30; i < srcWave.size() - 1; i++)
+	{
+		if (srcWave.at(i - 1) > srcWave.at(i) && srcWave.at(i) < srcWave.at(i + 1))
+		{
+			m = i;
+			for (int j = i + 2; j < srcWave.size() - 1; j++)
+			{
+				if (srcWave.at(j - 1) < srcWave.at(j) && srcWave.at(j) > srcWave.at(j + 1))
+					n = j;
+				break;
+			}
+			if (n > m)
+			{
+				vector<float> v1(srcWave.begin(), srcWave.begin() + m);
+				vector<float> v2(srcWave.begin(), srcWave.begin() + n);
+				float Sv1 = calculateSigma(v1);
+				float Sv2 = calculateSigma(v2);
+				if (Sv1 > 1.5*Svm || Sv2 > 2 * Sv1)
+					break;
+			}
+
+		}
+	}
+
+
+	int k = 50, l = 50;//兴趣区域的区间端点
+	vector<float> vk(srcWave.end() - k, srcWave.end());
+	float Svk = calculateSigma(vk);
+
+	//后向前遍历取点
+	for (int i = 50; i < srcWave.size() - 1; i++)
+	{
+		if (srcWave.at(320 - (i - 1)) > srcWave.at(320 - i) && srcWave.at(320 - i) < srcWave.at(320 - (i + 1)))
+		{
+			k = i;
+			for (int j = i + 2; j < srcWave.size() - 1; j++)
+			{
+				if (srcWave.at(320 - (j - 1)) < srcWave.at(320 - j) && srcWave.at(320 - j) > srcWave.at(320 - (j + 1)))
+					l = j;
+				break;
+			}
+			if (l > k)
+			{
+				vector<float> v1(srcWave.end() - k, srcWave.end());
+				vector<float> v2(srcWave.end() - l, srcWave.end());
+				float Sv1 = calculateSigma(v1);
+				float Sv2 = calculateSigma(v2);
+				if (Sv1 > 1.5 * Svk || Sv2 > 2 * Sv1)
+					break;
+			}
+
+		}
+	}
+
+	if ((n + 10) <= (320 - k))
+	{
+		for (int i = m - 1; i >= 0; i--)
+		{
+			srcWave.at(i) = srcWave.at(m);
+		}
+		for (int j = 320 - (k - 1); j <= 319; j++)
+		{
+			srcWave.at(j) = srcWave.at(320 - k);
+		}
+	}*/
+
+
 	//高斯滤波去噪
 	vector<float> dstWave;
 	dstWave.assign(srcWave.begin(), srcWave.end());
@@ -261,7 +359,7 @@ void WaveData::Filter(vector<float> &srcWave, float &noise)
 
 	noise = 0;
 	//计算随机噪声:两次滤波前后的波形数据的峰值差的均方差（标准差）
-	for (int i = 0; i < srcWave.size();i++)
+	for (int i = 0; i < srcWave.size(); i++)
 	{
 		noise += (srcWave.at(i) - dstWave.at(i)) * (srcWave.at(i) - dstWave.at(i));
 	}
@@ -278,13 +376,13 @@ void WaveData::Filter(vector<float> &srcWave, float &noise)
 void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam, float &noise)
 {
 	//拷贝原始数据
-	float data[320],temp[320];
+	float data[320], temp[320];
 	int i = 0, m = 0;
 	for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
 	{
 		data[i] = *iter;
 	}
-	
+
 	//将滤波后的数据最小值作为背景噪声
 	float backgroundNoise = data[0];
 	for (m = 0; m < 320; m++)
@@ -299,7 +397,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	{
 		temp[m] -= backgroundNoise;
 	}
-	srcWave.assign(&temp[0],&temp[320]);
+	srcWave.assign(&temp[0], &temp[320]);
 
 	float A;	//振幅
 	float b;	//脉冲距离
@@ -307,7 +405,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	float tgl;	//半峰时间位置（左)
 	float tgr;	//半峰时间位置（右）
 
-	//循环剥离过程
+				//循环剥离过程
 	do
 	{
 		A = 0;
@@ -351,7 +449,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		float sigma = fabs(tg - b) / sqrt(2 * log(2));
 
 		//将该组高斯分量参数压入向量
-		GaussParameter param{A,b,sigma};
+		GaussParameter param{ A,b,sigma };
 		waveParam.push_back(param);
 
 		//剥离
@@ -375,11 +473,11 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 			}
 		}
 
-		
-	} while (A >3*noise);//循环条件!!!值得探讨
+
+	} while (A >3 * noise);//循环条件!!!值得探讨
 
 
-	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
+						   //对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
 	for (int i = 0; i<waveParam.size() - 1; i++)
 	{
 		for (int j = i + 1; j < waveParam.size(); j++)
@@ -401,7 +499,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	//再将sigma小于阈值的分量剔除
 	for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end();)
 	{
-		if (gaussPraIter->sigma < ((float)PulseWidth/8))
+		if (gaussPraIter->sigma < ((float)PulseWidth / 8))
 		{
 			gaussPraIter = waveParam.erase(gaussPraIter);
 		}
@@ -418,10 +516,10 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 //&waveParam：	该通道的高斯分量参数
 //LM算法参考：	https://blog.csdn.net/shajun0153/article/details/75073137
 */
-void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam)
+void WaveData::Optimize(vector<float> &srcWave, vector<GaussParameter> &waveParam)
 {
 	//解算初值为双峰
-	if(waveParam.size()==2)
+	if (waveParam.size() == 2)
 	{
 		//获取高斯函数参数
 		double p[6];
@@ -455,7 +553,7 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 			NULL,						//opts,       //迭代的一些参数
 			info,						//关于最小化结果的一些参数，不需要设为NULL
 			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-			);
+		);
 		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
 		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
 		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
@@ -505,7 +603,7 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 			NULL,						//opts,       //迭代的一些参数
 			info,						//关于最小化结果的一些参数，不需要设为NULL
 			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-			);
+		);
 		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
 		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
 		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
@@ -519,7 +617,7 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 			gaussPraIter->sigma = p[i++];
 		}
 	}
-	
+
 	//解算初值为四个个峰
 	else if (waveParam.size() == 4)
 	{
@@ -555,7 +653,7 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 			NULL,						//opts,       //迭代的一些参数
 			info,						//关于最小化结果的一些参数，不需要设为NULL
 			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-			);
+		);
 		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
 		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
 		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
@@ -579,9 +677,9 @@ void WaveData::Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam
 */
 void WaveData::calculateDepth(vector<GaussParameter>& waveParam, float &BorGDepth)
 {
-	if ((waveParam.size() <= 1)|| (waveParam.size() >= 5))
+	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
 	{
-		BorGDepth=0;
+		BorGDepth = 0;
 	}
 	else
 	{
@@ -590,10 +688,10 @@ void WaveData::calculateDepth(vector<GaussParameter>& waveParam, float &BorGDept
 		float tend = tbegin;
 
 		int flag = 0;
-		for (gaussPraIter = waveParam.begin()+1; gaussPraIter != waveParam.end(); gaussPraIter++)
+		for (gaussPraIter = waveParam.begin() + 1; gaussPraIter != waveParam.end(); gaussPraIter++)
 		{
-			
-			if ((gaussPraIter->b > tend)&&(flag<2))//水底回波必定出现在水表回波的后续时刻，为与底部返回噪声区别，假定其与水面回波的回波时差在两个波峰内（考虑水体后向散射）
+
+			if ((gaussPraIter->b > tend) && (flag<2))//水底回波必定出现在水表回波的后续时刻，为与底部返回噪声区别，假定其与水面回波的回波时差在两个波峰内（考虑水体后向散射）
 			{
 				tend = gaussPraIter->b;
 				flag += 1;
@@ -608,7 +706,7 @@ void WaveData::calculateDepth(vector<GaussParameter>& waveParam, float &BorGDept
 ;
 
 /*功能：	自定义需要输出的信息
-//内容：	年 月 日 时 分 秒 
+//内容：	年 月 日 时 分 秒
 */
 ostream &operator<<(ostream & stream, const WaveData & wavedata)
 {
@@ -623,7 +721,7 @@ ostream &operator<<(ostream & stream, const WaveData & wavedata)
 	switch (wavedata.ostreamFlag)
 	{
 	case BLUE: {
-		stream << " " << wavedata.blueDepth<<"m";
+		stream << " " << wavedata.blueDepth << "m";
 
 		if (!wavedata.m_BlueGauPra.empty())
 		{
