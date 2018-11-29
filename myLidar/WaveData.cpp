@@ -8,7 +8,12 @@
 #define GREEN false
 
 #define c 0.3				//相对光速乘以纳秒
-#define nwater 1.334				//水质的折射率
+#define nwater 1.334		//水质的折射率
+
+//回波类型
+#define SURFACE true		//水表回波（可能包括后向散射）
+#define BOTTOM false		//水底或水中物质回波
+
 
 bool WaveData::ostreamFlag = BLUE;
 
@@ -403,7 +408,11 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	float tgl;	//半峰时间位置（左)
 	float tgr;	//半峰时间位置（右）
 
-				//循环剥离过程
+
+	bool wavetypeFlag = true;			//用来判断水表水底回波计算的flag
+	float surfaceMin, surfaceMax;	//水表回波位置所在的控制范围
+
+	//循环剥离过程
 	do
 	{
 		A = 0;
@@ -446,9 +455,50 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 		//计算sigma
 		float sigma = fabs(tg - b) / sqrt(2 * log(2));
 
-		//将该组高斯分量参数压入向量
-		GaussParameter param{ A,b,sigma };
-		waveParam.push_back(param);
+		//判断水表水底回波
+		if (wavetypeFlag == true)
+		{
+			//找右侧拐点
+			float rval = abs(temp[(int)b+1]-temp[(int)b]);
+			for (int i = b; b < 320 - b; i++)
+			{
+				if (abs(temp[i + 1] - temp[i]) >= rval)
+					rval = abs(temp[i + 1] - temp[i]);
+				else
+				{
+					surfaceMax = i+2;
+					break;
+				}			
+			}
+			//找左侧拐点
+			float lval = abs(temp[(int)b - 1] - temp[(int)b]);
+			for (int i = b; b > 0; i--)
+			{
+				if (abs(temp[i - 1] - temp[i]) >= lval)
+					lval = abs(temp[i - 1] - temp[i]);
+				else
+				{
+					surfaceMin = i-2;
+					break;
+				}
+			}
+
+			wavetypeFlag = false;
+
+		}
+
+		if (surfaceMin <= b&& b<= surfaceMax)//在选定区域内的高斯分量为同一组件（真实水表+后向散射）
+		{
+			//将该组高斯分量参数压入向量
+			GaussParameter param{ A,b,sigma,SURFACE };
+			waveParam.push_back(param);
+		}
+		else
+		{
+			//将该组高斯分量参数压入向量
+			GaussParameter param{ A,b,sigma,BOTTOM };
+			waveParam.push_back(param);
+		}
 
 		//剥离
 		for (m = 0; m < 320; m++)
@@ -475,7 +525,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	} while (A >3 * noise);//循环条件!!!值得探讨
 
 
-						   //对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
+	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
 	for (int i = 0; i<waveParam.size() - 1; i++)
 	{
 		for (int j = i + 1; j < waveParam.size(); j++)
@@ -685,14 +735,13 @@ void WaveData::calculateDepth(vector<GaussParameter>& waveParam, float &BorGDept
 		float tbegin = gaussPraIter->b;
 		float tend = tbegin;
 
-		int flag = 0;
 		for (gaussPraIter = waveParam.begin() + 1; gaussPraIter != waveParam.end(); gaussPraIter++)
 		{
 
-			if ((gaussPraIter->b > tend) && (flag<2))//水底回波必定出现在水表回波的后续时刻，为与底部返回噪声区别，假定其与水面回波的回波时差在两个波峰内（考虑水体后向散射）
+			if ((gaussPraIter->b > tend)&&(gaussPraIter->wavetype==BOTTOM))//水底回波必定出现在水表回波的后续时刻，为与底部返回噪声区别，假定其与水面回波的回波时差在两个波峰内（考虑水体后向散射）
 			{
 				tend = gaussPraIter->b;
-				flag += 1;
+				break;
 			}
 		}
 		//gaussPraIter = waveParam.end()-1;			//!!!坑

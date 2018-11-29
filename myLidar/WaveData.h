@@ -18,12 +18,15 @@ struct Time
 	int second;
 };
 
+
+
 //高斯函数参数结构体
 struct GaussParameter
 {
 	float A;	//振幅（Ymax）
 	float b;	//脉冲距离(对称轴)
 	float sigma;//脉冲宽度（宽幅）
+	bool wavetype;
 };
 
 float calculateSigma(vector<float> resultSet);//计算数据的标准差
