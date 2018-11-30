@@ -363,7 +363,6 @@ void ReadFile::outputData()
 				}
 				filter << endl;
 
-
 				mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra, mywave.m_BlueNoise);
 
 				//输出初解数据
@@ -373,9 +372,7 @@ void ReadFile::outputData()
 				}
 				resolve << endl;
 
-
 				mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
-
 
 				//输出迭代数据
 				for (auto data : mywave.m_BlueGauPra)
@@ -389,9 +386,39 @@ void ReadFile::outputData()
 			case GREEN:
 				WaveData::ostreamFlag = GREEN;
 
+				//输出滤波数据
+				for (auto data : mywave.m_GreenWave)
+				{
+					filter << data << " ";
+				}
+				filter << endl;
+
 				mywave.Filter(mywave.m_GreenWave, mywave.m_GreenNoise);
+
+				//输出滤波数据
+				for (auto data : mywave.m_GreenWave)
+				{
+					filter << data << " ";
+				}
+				filter << endl;
+
 				mywave.Resolve(mywave.m_GreenWave, mywave.m_GreenGauPra, mywave.m_GreenNoise);
+
+				//输出初解数据
+				for (auto data : mywave.m_GreenGauPra)
+				{
+					resolve << data.A << " " << data.b << " " << data.sigma << " ";
+				}
+				resolve << endl;
+
 				mywave.Optimize(mywave.m_GreenWave, mywave.m_GreenGauPra);
+
+				//输出迭代数据
+				for (auto data : mywave.m_GreenGauPra)
+				{
+					iterate << data.A << " " << data.b << " " << data.sigma << " ";
+				}
+				iterate << endl;
 
 				mywave.calculateDepth(mywave.m_GreenGauPra, mywave.greenDepth);
 				break;
@@ -427,7 +454,7 @@ void ReadFile::outputData()
 		origin.close();//初始数据
 		filter.close();//滤波数据
 		resolve.close();//初解算数据
-		iterate.close();
+		iterate.close();//迭代数据
 		cout << "finished！" << endl;
 	}
 
