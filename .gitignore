@@ -215,3 +215,5 @@ ModelManifest.xml
 /myLidar/levmar-2.6
 /myLidar/GreenOutput.txt
 /myLidar/BlueOut.txt
+/myLidar/filter.txt
+*.txt

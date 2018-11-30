@@ -13,6 +13,7 @@ public:
 	void readBlueAll();
 	void readGreenAll();
 	void readMix();
+	void outputData();
 private:
 	char *m_filename;
 	FILE *m_filePtr;
