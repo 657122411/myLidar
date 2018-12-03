@@ -20,13 +20,13 @@ int main()
 		{
 			cout << "Channel?(0:Blue/1:Green/2:All/3:Mix/4:outputData):" << endl;
 			cin >> flag;
-			switch(flag)
+			switch (flag)
 			{
 			case 0: {
 				myfile.readBlueAll();
 				break;
 			}
-			case 1:{
+			case 1: {
 				myfile.readGreenAll();
 				break;
 			}
@@ -45,6 +45,9 @@ int main()
 			}
 			}
 		}
+		else
+			continue;
+
 		cout << "continue?(1:Y/0:N):" << endl;
 		cin >> flag;
 	}
