@@ -54,6 +54,9 @@
     <ClInclude Include="ReadFile.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DeepWave.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -81,6 +84,9 @@
       <Filter>头文件</Filter>
     </ClCompile>
     <ClCompile Include="ReadFile.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DeepWave.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

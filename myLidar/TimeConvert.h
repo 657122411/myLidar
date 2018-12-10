@@ -1,6 +1,15 @@
 #ifndef TIMECONVERT_H
 #define TIMECONVERT_H
 
+typedef struct Time
+{
+	int year;
+	int month;
+	int day;
+	int hour;
+	int minute;
+	int second;
+};
 
 typedef struct tagCOMMONTIME
 {

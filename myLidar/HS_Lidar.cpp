@@ -60,6 +60,7 @@ void HS_Lidar::initData(FILE *fp) {
 	getChannel(fp, CH4);
 }
 
+
 //读取帧头
 void HS_Lidar::getHeader(FILE *fp) {
 
@@ -156,8 +157,81 @@ void HS_Lidar::getChannel(FILE *fp, HS_Lidar_Channel &CH) {
 
 	}
 		
+}
+
+
+//读取深水数据
+void HS_Lidar::initDeepData(FILE *fp)
+{
+	getHeader(fp);
+	getDeepChannel(fp, CH1, deepData1);
+	getDeepChannel(fp, CH2, deepData2);
+	getDeepChannel(fp, CH3, deepData3);
+	getDeepChannel(fp, CH4, deepData4);
+}
+
+//读取通道深水数据
+void HS_Lidar::getDeepChannel(FILE *fp, HS_Lidar_Channel &CH,vector<int> &deepData) {
+
+	fread(&CH.nHeader, sizeof(uint32_t), 1, fp);
+	CH.nHeader = Swap32(CH.nHeader);
+
+	//判断数据是否正确
+	if (CH.nHeader == 3952125274)
+	{
+
+		fread(&CH.nChannelNo, sizeof(uint16_t), 1, fp);
+		CH.nChannelNo = Swap16(CH.nChannelNo);
+
+		fread(&CH.nS0, sizeof(uint16_t), 1, fp);
+		CH.nS0 = Swap16(CH.nS0);
+
+		fread(&CH.nL0, sizeof(uint16_t), 1, fp);
+		CH.nL0 = Swap16(CH.nL0);
+
+
+		fread(&CH.nD0, CH.nL0 * sizeof(uint16_t), 1, fp);
+
+		DataInt16Swap16(CH.nD0, CH.nL0);
 
 
 
+
+		fread(&CH.nTest, sizeof(uint32_t), 1, fp);
+		CH.nTest = Swap32(CH.nTest);
+
+		if (CH.nTest == 3952125274)
+		{
+			fseek(fp, -4, SEEK_CUR);
+			CH.nS1 = 0;
+			CH.nL1 = 0;
+			CH.nD1 = 0;
+		}
+		else
+		{
+			fseek(fp, -4, SEEK_CUR);
+
+			fread(&CH.nS1, sizeof(uint16_t), 1, fp);
+			CH.nS1 = Swap16(CH.nS1);
+
+			fread(&CH.nL1, sizeof(uint16_t), 1, fp);
+			CH.nL1 = Swap16(CH.nL1);
+
+			//CH_Data1的数据在这里并没有使用
+			uint16_t *Ch_Data1 = new uint16_t[CH.nL1];
+			fread(Ch_Data1, CH.nL1 * sizeof(uint16_t), 1, fp);
+			DataInt16Swap16(Ch_Data1, CH.nL1);
+
+			//将二段回波数据传出到vector
+			deepData.assign(Ch_Data1, Ch_Data1 + CH.nL1);
+
+			if (Ch_Data1 != NULL)
+			{
+				delete[] Ch_Data1;
+				Ch_Data1 = NULL;
+			}
+		}
+
+	}
 
 }

@@ -8,15 +8,15 @@
 using namespace std;
 
 //UTC时间结构体
-struct Time
-{
-	int year;
-	int month;
-	int day;
-	int hour;
-	int minute;
-	int second;
-};
+//struct Time
+//{
+//	int year;
+//	int month;
+//	int day;
+//	int hour;
+//	int minute;
+//	int second;
+//};
 
 
 

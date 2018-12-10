@@ -148,6 +148,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DeepWave.h" />
     <ClInclude Include="HS_Lidar.h" />
     <ClInclude Include="HS_Lidar_Channel.h" />
     <ClInclude Include="HS_Lidar_Header.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="WaveData.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DeepWave.cpp" />
     <ClCompile Include="HS_Lidar.cpp" />
     <ClCompile Include="levmar-2.6\Axb.c" />
     <ClCompile Include="levmar-2.6\lm.c" />

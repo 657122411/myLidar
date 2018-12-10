@@ -459,3 +459,63 @@ void ReadFile::outputData()
 	}
 
 }
+
+
+/*功能：	读取深水数据
+//out:	
+*/
+void ReadFile::readDeep()
+{
+	unsigned int j = 0;
+	HS_Lidar hs;
+
+	//把文件的位置指针移到文件尾获取文件长度
+	unsigned int length;
+	fseek(m_filePtr, 0L, SEEK_END);
+	length = ftell(m_filePtr);
+	cout << "ReadDeepProcessing:";
+
+
+	//遍历文件获取数据
+	do {
+		_fseeki64(m_filePtr, j * 8, SEEK_SET);
+
+		//寻找帧头
+		uint8_t header[8];
+		memset(header, 0, sizeof(uint8_t) * 8);
+		fread(header, sizeof(uint8_t), 8, m_filePtr);
+		if (isHeaderRight(header))
+		{
+			//处理数据的流程：
+			_fseeki64(m_filePtr, -8, SEEK_CUR);
+			hs.initDeepData(m_filePtr);
+
+			//获取通道的深水段回波数据
+			DeepWave dw;
+			dw.GetDeepData(hs);
+
+			//process
+
+			//文件指针偏移一帧完整数据的字节数：2688/8
+			j += 336;
+
+			//打印处理进程情况
+			cout.width(3);
+			cout << int(/*100 * 8 **/ j / (length / 800)) << "%";
+			cout << "\b\b\b\b";
+
+		}
+		else
+		{
+			//可能会多出二段回波数据：uint16_t[CH.nL1] -> 2*n
+			j += 2;
+		}
+
+	} while (!feof(m_filePtr));
+
+	//文件结束退出
+	if (feof(m_filePtr) == 1)
+	{
+		cout << "finished！" << endl;
+	}
+}
