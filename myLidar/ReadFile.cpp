@@ -476,6 +476,15 @@ void ReadFile::readDeep()
 	cout << "ReadDeepProcessing:";
 
 
+	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
+	fstream output_stream;
+	output_stream.open("DeepOut.txt", ios::out);
+
+	int bgflag;
+	float blueStd, greenStd;
+
+
+
 	//遍历文件获取数据
 	do {
 		_fseeki64(m_filePtr, j * 8, SEEK_SET);
@@ -495,6 +504,41 @@ void ReadFile::readDeep()
 			dw.GetDeepData(hs);
 
 			//process
+			blueStd = calculateSigma(dw.m_BlueDeep);
+			greenStd = calculateSigma(dw.m_GreenDeep);
+
+			blueStd >= 1.2*greenStd ? bgflag = BLUE : bgflag = GREEN;//判断阈值
+
+			switch (bgflag)
+			{
+			case BLUE:
+				DeepWave::ostreamFlag = BLUE;
+
+				dw.DeepFilter(dw.m_BlueDeep, dw.m_BlueDeepNoise);
+				dw.DeepResolve(dw.m_BlueDeep, dw.m_BlueDeepGauPra, dw.m_BlueDeepNoise);
+				dw.DeepOptimize(dw.m_BlueDeep, dw.m_BlueDeepGauPra);
+
+				dw.calculateDeepDepth(dw.m_BlueDeepGauPra, dw.blueDeepDepth);
+				break;
+			case GREEN:
+				DeepWave::ostreamFlag = GREEN;
+
+				dw.DeepFilter(dw.m_GreenDeep, dw.m_GreenDeepNoise);
+				dw.DeepResolve(dw.m_GreenDeep, dw.m_GreenDeepGauPra, dw.m_GreenDeepNoise);
+				dw.DeepOptimize(dw.m_GreenDeep, dw.m_GreenDeepGauPra);
+
+				dw.calculateDeepDepth(dw.m_GreenDeepGauPra, dw.greenDeepDepth);
+				break;
+			default:
+				break;
+			}
+
+
+			//输出信息到文件
+			output_stream << dw;
+
+
+
 
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
