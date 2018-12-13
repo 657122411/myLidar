@@ -236,7 +236,11 @@ void jacexpfun4(double *p, double *jac, int m, int n, void *data)
 
 WaveData::WaveData()
 {
-
+	m_time = { 0,0,0,0,0,0 };
+	m_BlueNoise = 0;
+	m_GreenNoise = 0;
+	blueDepth = 0;
+	greenDepth = 0;
 };
 
 
