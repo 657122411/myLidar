@@ -53,13 +53,14 @@ void gau_kernel(float kernel[], int size, float sigma)
 */
 void gaussian(float src[], float dst[])
 {
-	float kernel[7];
-	gau_kernel(kernel, 7, 1);
+	float kernel[5];
+	gau_kernel(kernel, 5, 1);
 	//gaussian卷积,此时边界没加处理
-	for (int i = (7 - 1) / 2; i <= 799 - (7 - 1) / 2; i++)
+	for (int i = (5 - 1) / 2; i <= 319 - (5 - 1) / 2; i++)
 	{
-		dst[i] = src[i - 3] * kernel[0] + src[i - 2] * kernel[1] + src[i - 1] * kernel[2] + src[i] * kernel[3] + src[i + 1] * kernel[4] + src[i + 2] * kernel[5] + src[i + 3] * kernel[6];
+		dst[i] = src[i - 2] * kernel[0] + src[i - 1] * kernel[1] + src[i] * kernel[2] + src[i + 1] * kernel[3] + src[i + 2] * kernel[4];
 	}
+	
 }
 
 
@@ -241,7 +242,7 @@ WaveData::WaveData()
 	m_GreenNoise = 0;
 	blueDepth = 0;
 	greenDepth = 0;
-};
+}
 
 
 WaveData::~WaveData()
@@ -251,7 +252,7 @@ WaveData::~WaveData()
 	vector<float>().swap(m_GreenWave);
 	vector<GaussParameter>().swap(m_BlueGauPra);
 	vector<GaussParameter>().swap(m_GreenGauPra);
-};
+}
 
 
 /*功能：	提取原始数据中的兴趣区域数据
@@ -279,7 +280,7 @@ void WaveData::GetData(HS_Lidar &hs)
 	m_BlueWave.assign(&hs.CH2.nD0[0], &hs.CH2.nD0[320]);
 	m_GreenWave.assign(&hs.CH3.nD0[0], &hs.CH3.nD0[320]);
 
-};
+}
 
 
 /*功能：		预处理数据：截取有效部分并进行去噪滤波操作
@@ -373,7 +374,7 @@ void WaveData::Filter(vector<float> &srcWave, float &noise)
 	noise = sqrt(noise / srcWave.size());
 
 	srcWave.assign(dstWave.begin(), dstWave.end());
-};
+}
 
 
 /*功能：			高斯分量分解函数
@@ -560,7 +561,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 			++gaussPraIter;
 		}
 	}
-};
+}
 
 
 /*功能：			LM算法迭代优化
@@ -754,7 +755,7 @@ void WaveData::calculateDepth(vector<GaussParameter>& waveParam, float &BorGDept
 		BorGDepth = c*(tend - tbegin) / (2 * nwater);
 	}
 }
-;
+
 
 /*功能：	自定义需要输出的信息
 //内容：	年 月 日 时 分 秒

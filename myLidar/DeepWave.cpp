@@ -53,12 +53,12 @@ void deep_gau_kernel(float kernel[], int size, float sigma)
 */
 void deep_gaussian(float src[], float dst[])
 {
-	float kernel[5];
-	deep_gau_kernel(kernel, 5, 1);
+	float kernel[7];
+	deep_gau_kernel(kernel, 7, 1);
 	//gaussian卷积,此时边界没加处理
-	for (int i = (5 - 1) / 2; i <= 319 - (5 - 1) / 2; i++)
+	for (int i = (7 - 1) / 2; i <= 799 - (7 - 1) / 2; i++)
 	{
-		dst[i] = src[i - 2] * kernel[0] + src[i - 1] * kernel[1] + src[i] * kernel[2] + src[i + 1] * kernel[3] + src[i + 2] * kernel[4];
+		dst[i] = src[i - 3] * kernel[0] + src[i - 2] * kernel[1] + src[i - 1] * kernel[2] + src[i] * kernel[3] + src[i + 1] * kernel[4] + src[i + 2] * kernel[5] + src[i + 3] * kernel[6];
 	}
 }
 
@@ -300,7 +300,7 @@ void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 	noise = sqrt(noise / srcWave.size());
 
 	srcWave.assign(dstWave.begin(), dstWave.end());
-};
+}
 
 
 /*功能：			高斯分量分解函数
@@ -472,7 +472,7 @@ void DeepWave::DeepResolve(vector<float> &srcWave, vector<DeepGaussParameter> &w
 			++DeepgaussPraIter;
 		}
 	}
-};
+}
 
 
 /*功能：			LM算法迭代优化
@@ -666,7 +666,7 @@ void DeepWave::calculateDeepDepth(vector<DeepGaussParameter>& waveParam, float &
 		BorGDepth = c*(tend - tbegin) / (2 * ndeepwater);
 	}
 }
-;
+
 
 /*功能：	自定义需要输出的信息
 //内容：	年 月 日 时 分 秒
