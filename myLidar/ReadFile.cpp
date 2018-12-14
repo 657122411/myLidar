@@ -20,13 +20,16 @@ bool isHeaderRight(uint8_t header[8])
 	return returnVal;
 }
 
+
 ReadFile::ReadFile()
 {
 }
 
+
 ReadFile::~ReadFile()
 {
 }
+
 
 /*功能：	设置读取文件的指针
 //in:	读取文件的绝对路径
@@ -259,7 +262,6 @@ void ReadFile::readMix()
 				break;
 			}
 			
-
 			//输出信息到文件
 			output_stream << mywave;
 
@@ -306,7 +308,6 @@ void ReadFile::outputData()
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
 	fstream output_stream;
 	output_stream.open("MixOut.txt", ios::out);
-
 
 	fstream origin;//初始数据
 	fstream filter;//滤波数据
@@ -426,7 +427,6 @@ void ReadFile::outputData()
 				break;
 			}
 
-
 			//输出信息到文件
 			output_stream << mywave;
 
@@ -533,12 +533,8 @@ void ReadFile::readDeep()
 				break;
 			}
 
-
 			//输出信息到文件
 			output_stream << dw;
-
-
-
 
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;

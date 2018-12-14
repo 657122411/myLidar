@@ -7,16 +7,6 @@
 #include "levmar.h"
 using namespace std;
 
-//UTC时间结构体
-//struct Time
-//{
-//	int year;
-//	int month;
-//	int day;
-//	int hour;
-//	int minute;
-//	int second;
-//};
 
 //高斯函数参数结构体
 struct DeepGaussParameter
@@ -27,7 +17,9 @@ struct DeepGaussParameter
 	bool deepwavetype;
 };
 
-float calculateDeepSigma(vector<float> resultSet);//计算数据的标准差
+
+//计算数据的标准差
+float calculateDeepSigma(vector<float> resultSet);
 
 //深水波形数据类
 class DeepWave

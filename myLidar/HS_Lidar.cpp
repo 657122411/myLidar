@@ -9,7 +9,7 @@
 
 
 
-
+//数据结构体
 union DoubleAndChar                
 {
 	double dval;
@@ -17,6 +17,7 @@ union DoubleAndChar
 };
 
 
+//字节序转换函数
 double  SwapDouble(double * dv)
 {
 	DoubleAndChar dac;
@@ -32,6 +33,7 @@ double  SwapDouble(double * dv)
 }
 
 
+//字节序转换函数
 void DataInt16Swap16(uint16_t *Data, uint16_t nNum)//int nNum
 {
 	for (uint16_t i = 0; i < nNum; i++)
@@ -105,7 +107,6 @@ void HS_Lidar::getChannel(FILE *fp, HS_Lidar_Channel &CH) {
 	//判断数据是否正确
 	if (CH.nHeader == 3952125274)
 	{
-
 		fread(&CH.nChannelNo, sizeof(uint16_t), 1, fp);
 		CH.nChannelNo = Swap16(CH.nChannelNo);
 
@@ -119,9 +120,6 @@ void HS_Lidar::getChannel(FILE *fp, HS_Lidar_Channel &CH) {
 		fread(&CH.nD0, CH.nL0 * sizeof(uint16_t), 1, fp);
 
 		DataInt16Swap16(CH.nD0, CH.nL0);
-
-
-
 
 		fread(&CH.nTest, sizeof(uint32_t), 1, fp);
 		CH.nTest = Swap32(CH.nTest);
@@ -154,9 +152,7 @@ void HS_Lidar::getChannel(FILE *fp, HS_Lidar_Channel &CH) {
 				Ch_Data1 = NULL;
 			}
 		}
-
-	}
-		
+	}		
 }
 
 
@@ -171,15 +167,14 @@ void HS_Lidar::initDeepData(FILE *fp)
 }
 
 //读取通道深水数据
-void HS_Lidar::getDeepChannel(FILE *fp, HS_Lidar_Channel &CH,vector<int> &deepData) {
-
+void HS_Lidar::getDeepChannel(FILE *fp, HS_Lidar_Channel &CH,vector<int> &deepData) 
+{
 	fread(&CH.nHeader, sizeof(uint32_t), 1, fp);
 	CH.nHeader = Swap32(CH.nHeader);
 
 	//判断数据是否正确
 	if (CH.nHeader == 3952125274)
 	{
-
 		fread(&CH.nChannelNo, sizeof(uint16_t), 1, fp);
 		CH.nChannelNo = Swap16(CH.nChannelNo);
 
@@ -189,13 +184,9 @@ void HS_Lidar::getDeepChannel(FILE *fp, HS_Lidar_Channel &CH,vector<int> &deepDa
 		fread(&CH.nL0, sizeof(uint16_t), 1, fp);
 		CH.nL0 = Swap16(CH.nL0);
 
-
 		fread(&CH.nD0, CH.nL0 * sizeof(uint16_t), 1, fp);
 
 		DataInt16Swap16(CH.nD0, CH.nL0);
-
-
-
 
 		fread(&CH.nTest, sizeof(uint32_t), 1, fp);
 		CH.nTest = Swap32(CH.nTest);
@@ -231,7 +222,5 @@ void HS_Lidar::getDeepChannel(FILE *fp, HS_Lidar_Channel &CH,vector<int> &deepDa
 				Ch_Data1 = NULL;
 			}
 		}
-
 	}
-
 }

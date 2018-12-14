@@ -1,6 +1,7 @@
 #ifndef TIMECONVERT_H
 #define TIMECONVERT_H
 
+//UTC时间结构体
 typedef struct Time
 {
 	int year;
@@ -11,6 +12,7 @@ typedef struct Time
 	int second;
 };
 
+//通用时
 typedef struct tagCOMMONTIME
 {
 	int   year;
@@ -19,7 +21,7 @@ typedef struct tagCOMMONTIME
 	int   hour;
 	int   minute;
 	double   second;
-}COMMONTIME;//通用时
+}COMMONTIME;
 
 typedef COMMONTIME *PCOMMONTIME;
 

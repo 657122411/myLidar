@@ -59,8 +59,7 @@ void gaussian(float src[], float dst[])
 	for (int i = (5 - 1) / 2; i <= 319 - (5 - 1) / 2; i++)
 	{
 		dst[i] = src[i - 2] * kernel[0] + src[i - 1] * kernel[1] + src[i] * kernel[2] + src[i + 1] * kernel[3] + src[i + 2] * kernel[4];
-	}
-	
+	}	
 }
 
 
@@ -84,7 +83,6 @@ float calculateSigma(vector<float> resultSet)
 	float stdev = sqrt(accum / (resultSet.size() - 1)); //方差  
 
 	return stdev;
-
 }
 
 
@@ -104,7 +102,6 @@ void expfun2(double *p, double *x, int m, int n, void *data)
 		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2]))
 			+ p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]));
 	}
-
 }
 
 
@@ -149,7 +146,6 @@ void expfun3(double *p, double *x, int m, int n, void *data)
 			+ p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]))
 			+ p[6] * exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*(2 * p[8]));
 	}
-
 }
 
 
@@ -199,7 +195,6 @@ void expfun4(double *p, double *x, int m, int n, void *data)
 			+ p[6] * exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*(2 * p[8]))
 			+ p[9] * exp(-(i - p[10])*(i - p[10]) / (2 * p[11])*(2 * p[11]));
 	}
-
 }
 
 
@@ -235,6 +230,9 @@ void jacexpfun4(double *p, double *jac, int m, int n, void *data)
 }
 
 
+/*
+//功能：构造函数初始化数据
+*/
 WaveData::WaveData()
 {
 	m_time = { 0,0,0,0,0,0 };
@@ -279,7 +277,6 @@ void WaveData::GetData(HS_Lidar &hs)
 	//取蓝绿通道
 	m_BlueWave.assign(&hs.CH2.nD0[0], &hs.CH2.nD0[320]);
 	m_GreenWave.assign(&hs.CH3.nD0[0], &hs.CH3.nD0[320]);
-
 }
 
 
@@ -412,7 +409,6 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 	float tg;	//峰值时间位置
 	float tgl;	//半峰时间位置（左)
 	float tgr;	//半峰时间位置（右）
-
 
 	bool wavetypeFlag = true;			//用来判断水表水底回波计算的flag
 	float surfaceMin, surfaceMax;	//水表回波位置所在的控制范围
@@ -800,4 +796,3 @@ ostream &operator<<(ostream & stream, const WaveData & wavedata)
 	stream << endl;
 	return stream;
 }
-

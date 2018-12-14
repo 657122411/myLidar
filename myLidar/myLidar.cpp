@@ -2,7 +2,6 @@
 //
 
 #include "stdafx.h"
-#include "WaveData.h"
 #include "ReadFile.h"
 using namespace std;
 

@@ -17,6 +17,7 @@
 
 bool DeepWave::ostreamFlag = BLUE;
 
+
 /*功能：  高斯核生成
 //kernel：存储生成的高斯核
 //size：  核的大小
@@ -83,7 +84,6 @@ float calculateDeepSigma(vector<float> resultSet)
 	float stdev = sqrt(accum / (resultSet.size() - 1)); //方差  
 
 	return stdev;
-
 }
 
 
@@ -104,7 +104,6 @@ void deep_expfun2(double *p, double *x, int m, int n, void *data)
 		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2]))
 			+ p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]));
 	}
-
 }
 
 
@@ -149,7 +148,6 @@ void deep_expfun3(double *p, double *x, int m, int n, void *data)
 			+ p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]))
 			+ p[6] * exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*(2 * p[8]));
 	}
-
 }
 
 
@@ -235,7 +233,9 @@ void deep_jacexpfun4(double *p, double *jac, int m, int n, void *data)
 }
 
 
-
+/*
+//功能：构造函数初始化数据
+*/
 DeepWave::DeepWave()
 {
 	m_time = { 0,0,0,0,0,0 };
@@ -245,10 +245,15 @@ DeepWave::DeepWave()
 	greenDeepDepth = 0;
 }
 
+
 DeepWave::~DeepWave()
 {
 }
 
+
+/*功能：		获取原始数据中深浅水通道的二段回波数据
+//&hs:		通道原始数据
+*/
 void DeepWave::GetDeepData(HS_Lidar & hs)
 {
 	//GPS->UTC->BeiJing
@@ -332,7 +337,7 @@ void DeepWave::DeepResolve(vector<float> &srcWave, vector<DeepGaussParameter> &w
 	bool wavetypeFlag = true;			//用来判断水表水底回波计算的flag
 	float surfaceMin, surfaceMax;	//水表回波位置所在的控制范围
 
-									//循环剥离过程
+	//循环剥离过程
 	do
 	{
 		A = 0;
@@ -441,7 +446,7 @@ void DeepWave::DeepResolve(vector<float> &srcWave, vector<DeepGaussParameter> &w
 	} while (A >5 * noise);//循环条件!!!值得探讨
 
 
-						   //对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
+	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
 	for (int i = 0; i<waveParam.size() - 1; i++)
 	{
 		for (int j = i + 1; j < waveParam.size(); j++)

@@ -7,29 +7,20 @@
 #include "levmar.h"
 using namespace std;
 
-//UTC时间结构体
-//struct Time
-//{
-//	int year;
-//	int month;
-//	int day;
-//	int hour;
-//	int minute;
-//	int second;
-//};
-
-
 
 //高斯函数参数结构体
 struct GaussParameter
 {
-	float A;	//振幅（Ymax）
-	float b;	//脉冲距离(对称轴)
-	float sigma;//脉冲宽度（宽幅）
-	bool wavetype;
+	float A;		//振幅（Ymax）
+	float b;		//脉冲距离(对称轴)
+	float sigma;	//脉冲宽度（宽幅）
+	bool wavetype;	//该高斯组量的水表水底类型
 };
 
-float calculateSigma(vector<float> resultSet);//计算数据的标准差
+
+//计算数据的标准差
+float calculateSigma(vector<float> resultSet);
+
 
 //波形数据类
 class WaveData
@@ -58,5 +49,3 @@ public:
 	float greenDepth;								//CH3通道的计算水深
 	void calculateDepth(vector<GaussParameter> &waveParam,float &BorGDepth);	//根据回波数据计算水深
 };
-
-
