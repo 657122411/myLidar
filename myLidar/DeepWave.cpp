@@ -18,48 +18,196 @@
 bool DeepWave::ostreamFlag = BLUE;
 
 
-/*功能：  高斯核生成
-//kernel：存储生成的高斯核
-//size：  核的大小
-//sigma： 正态分布标准差
-*/
-void deep_gau_kernel(float kernel[], int size, float sigma)
+//五点线性平滑
+void linearSmooth5(float in[], float out[], int N)
 {
-	if (size <= 0 || sigma == 0)
-		return;
-	int x;
-	float sum = 0;
-	int m = (size - 1) / 2;
-
-	//get kernel	
-	for (x = 0; x <size; x++)
+	int i;
+	if (N < 5)
 	{
-		kernel[x] = (1 / sigma * sqrt(2 * 3.1415)) * exp(-(x - m)*(x - m) / 2 * sigma*sigma);
-		sum += kernel[x];
+		for (i = 0; i <= N - 1; i++)
+		{
+			out[i] = in[i];
+		}
 	}
-
-	//normal
-	for (x = 0; x < size; x++)
+	else
 	{
-		kernel[x] /= sum;
+		out[0] = (3.0 * in[0] + 2.0 * in[1] + in[2] - in[4]) / 5.0;
+		out[1] = (4.0 * in[0] + 3.0 * in[1] + 2 * in[2] + in[3]) / 10.0;
+		for (i = 2; i <= N - 3; i++)
+		{
+			out[i] = (in[i - 2] + in[i - 1] + in[i] + in[i + 1] + in[i + 2]) / 5.0;
+		}
+		out[N - 2] = (4.0 * in[N - 1] + 3.0 * in[N - 2] + 2 * in[N - 3] + in[N - 4]) / 10.0;
+		out[N - 1] = (3.0 * in[N - 1] + 2.0 * in[N - 2] + in[N - 3] - in[N - 5]) / 5.0;
 	}
 }
 
 
-/*功能:	 高斯模糊
-//src：  输入原图
-//dst：  模糊图像
-//size： 核的大小
-//sigma：正态分布标准差
-*/
-void deep_gaussian(float src[], float dst[])
+//七点线性平滑
+void linearSmooth7(float in[], float out[], int N)
 {
-	float kernel[7];
-	deep_gau_kernel(kernel, 7, 1);
-	//gaussian卷积,此时边界没加处理
-	for (int i = (7 - 1) / 2; i <= 799 - (7 - 1) / 2; i++)
+	int i;
+	if (N < 7)
 	{
-		dst[i] = src[i - 3] * kernel[0] + src[i - 2] * kernel[1] + src[i - 1] * kernel[2] + src[i] * kernel[3] + src[i + 1] * kernel[4] + src[i + 2] * kernel[5] + src[i + 3] * kernel[6];
+		for (i = 0; i <= N - 1; i++)
+		{
+			out[i] = in[i];
+		}
+	}
+	else
+	{
+		out[0] = (13.0 * in[0] + 10.0 * in[1] + 7.0 * in[2] + 4.0 * in[3] +
+			in[4] - 2.0 * in[5] - 5.0 * in[6]) / 28.0;
+
+		out[1] = (5.0 * in[0] + 4.0 * in[1] + 3 * in[2] + 2 * in[3] +
+			in[4] - in[6]) / 14.0;
+
+		out[2] = (7.0 * in[0] + 6.0 * in[1] + 5.0 * in[2] + 4.0 * in[3] +
+			3.0 * in[4] + 2.0 * in[5] + in[6]) / 28.0;
+
+		for (i = 3; i <= N - 4; i++)
+		{
+			out[i] = (in[i - 3] + in[i - 2] + in[i - 1] + in[i] + in[i + 1] + in[i + 2] + in[i + 3]) / 7.0;
+		}
+
+		out[N - 3] = (7.0 * in[N - 1] + 6.0 * in[N - 2] + 5.0 * in[N - 3] +
+			4.0 * in[N - 4] + 3.0 * in[N - 5] + 2.0 * in[N - 6] + in[N - 7]) / 28.0;
+
+		out[N - 2] = (5.0 * in[N - 1] + 4.0 * in[N - 2] + 3.0 * in[N - 3] +
+			2.0 * in[N - 4] + in[N - 5] - in[N - 7]) / 14.0;
+
+		out[N - 1] = (13.0 * in[N - 1] + 10.0 * in[N - 2] + 7.0 * in[N - 3] +
+			4 * in[N - 4] + in[N - 5] - 2 * in[N - 6] - 5 * in[N - 7]) / 28.0;
+	}
+}
+
+
+//五点二次函数拟合平滑
+void quadraticSmooth5(float in[], float out[], int N)
+{
+	int i;
+	if (N < 5)
+	{
+		for (i = 0; i <= N - 1; i++)
+		{
+			out[i] = in[i];
+		}
+	}
+	else
+	{
+		out[0] = (31.0 * in[0] + 9.0 * in[1] - 3.0 * in[2] - 5.0 * in[3] + 3.0 * in[4]) / 35.0;
+		out[1] = (9.0 * in[0] + 13.0 * in[1] + 12 * in[2] + 6.0 * in[3] - 5.0 *in[4]) / 35.0;
+		for (i = 2; i <= N - 3; i++)
+		{
+			out[i] = (-3.0 * (in[i - 2] + in[i + 2]) +
+				12.0 * (in[i - 1] + in[i + 1]) + 17 * in[i]) / 35.0;
+		}
+		out[N - 2] = (9.0 * in[N - 1] + 13.0 * in[N - 2] + 12.0 * in[N - 3] + 6.0 * in[N - 4] - 5.0 * in[N - 5]) / 35.0;
+		out[N - 1] = (31.0 * in[N - 1] + 9.0 * in[N - 2] - 3.0 * in[N - 3] - 5.0 * in[N - 4] + 3.0 * in[N - 5]) / 35.0;
+	}
+}
+
+
+//七点二次函数拟合平滑
+void quadraticSmooth7(float in[], float out[], int N)
+{
+	int i;
+	if (N < 7)
+	{
+		for (i = 0; i <= N - 1; i++)
+		{
+			out[i] = in[i];
+		}
+	}
+	else
+	{
+		out[0] = (32.0 * in[0] + 15.0 * in[1] + 3.0 * in[2] - 4.0 * in[3] -
+			6.0 * in[4] - 3.0 * in[5] + 5.0 * in[6]) / 42.0;
+
+		out[1] = (5.0 * in[0] + 4.0 * in[1] + 3.0 * in[2] + 2.0 * in[3] +
+			in[4] - in[6]) / 14.0;
+
+		out[2] = (1.0 * in[0] + 3.0 * in[1] + 4.0 * in[2] + 4.0 * in[3] +
+			3.0 * in[4] + 1.0 * in[5] - 2.0 * in[6]) / 14.0;
+		for (i = 3; i <= N - 4; i++)
+		{
+			out[i] = (-2.0 * (in[i - 3] + in[i + 3]) +
+				3.0 * (in[i - 2] + in[i + 2]) +
+				6.0 * (in[i - 1] + in[i + 1]) + 7.0 * in[i]) / 21.0;
+		}
+		out[N - 3] = (1.0 * in[N - 1] + 3.0 * in[N - 2] + 4.0 * in[N - 3] +
+			4.0 * in[N - 4] + 3.0 * in[N - 5] + 1.0 * in[N - 6] - 2.0 * in[N - 7]) / 14.0;
+
+		out[N - 2] = (5.0 * in[N - 1] + 4.0 * in[N - 2] + 3.0 * in[N - 3] +
+			2.0 * in[N - 4] + in[N - 5] - in[N - 7]) / 14.0;
+
+		out[N - 1] = (32.0 * in[N - 1] + 15.0 * in[N - 2] + 3.0 * in[N - 3] -
+			4.0 * in[N - 4] - 6.0 * in[N - 5] - 3.0 * in[N - 6] + 5.0 * in[N - 7]) / 42.0;
+	}
+}
+
+
+/*
+* 五点三次平滑
+*/
+void cubicSmooth5(float in[], float out[], int N)
+{
+
+	int i;
+	if (N < 5)
+	{
+		for (i = 0; i <= N - 1; i++)
+			out[i] = in[i];
+	}
+
+	else
+	{
+		out[0] = (69.0 * in[0] + 4.0 * in[1] - 6.0 * in[2] + 4.0 * in[3] - in[4]) / 70.0;
+		out[1] = (2.0 * in[0] + 27.0 * in[1] + 12.0 * in[2] - 8.0 * in[3] + 2.0 * in[4]) / 35.0;
+		for (i = 2; i <= N - 3; i++)
+		{
+			out[i] = (-3.0 * (in[i - 2] + in[i + 2]) + 12.0 * (in[i - 1] + in[i + 1]) + 17.0 * in[i]) / 35.0;
+		}
+		out[N - 2] = (2.0 * in[N - 5] - 8.0 * in[N - 4] + 12.0 * in[N - 3] + 27.0 * in[N - 2] + 2.0 * in[N - 1]) / 35.0;
+		out[N - 1] = (-in[N - 5] + 4.0 * in[N - 4] - 6.0 * in[N - 3] + 4.0 * in[N - 2] + 69.0 * in[N - 1]) / 70.0;
+	}
+	return;
+}
+
+
+/*
+* 七点三次平滑
+*/
+void cubicSmooth7(float in[], float out[], int N)
+{
+	int i;
+	if (N < 7)
+	{
+		for (i = 0; i <= N - 1; i++)
+		{
+			out[i] = in[i];
+		}
+	}
+	else
+	{
+		out[0] = (39.0 * in[0] + 8.0 * in[1] - 4.0 * in[2] - 4.0 * in[3] +
+			1.0 * in[4] + 4.0 * in[5] - 2.0 * in[6]) / 42.0;
+		out[1] = (8.0 * in[0] + 19.0 * in[1] + 16.0 * in[2] + 6.0 * in[3] -
+			4.0 * in[4] - 7.0* in[5] + 4.0 * in[6]) / 42.0;
+		out[2] = (-4.0 * in[0] + 16.0 * in[1] + 19.0 * in[2] + 12.0 * in[3] +
+			2.0 * in[4] - 4.0 * in[5] + 1.0 * in[6]) / 42.0;
+		for (i = 3; i <= N - 4; i++)
+		{
+			out[i] = (-2.0 * (in[i - 3] + in[i + 3]) +
+				3.0 * (in[i - 2] + in[i + 2]) +
+				6.0 * (in[i - 1] + in[i + 1]) + 7.0 * in[i]) / 21.0;
+		}
+		out[N - 3] = (-4.0 * in[N - 1] + 16.0 * in[N - 2] + 19.0 * in[N - 3] +
+			12.0 * in[N - 4] + 2.0 * in[N - 5] - 4.0 * in[N - 6] + 1.0 * in[N - 7]) / 42.0;
+		out[N - 2] = (8.0 * in[N - 1] + 19.0 * in[N - 2] + 16.0 * in[N - 3] +
+			6.0 * in[N - 4] - 4.0 * in[N - 5] - 7.0 * in[N - 6] + 4.0 * in[N - 7]) / 42.0;
+		out[N - 1] = (39.0 * in[N - 1] + 8.0 * in[N - 2] - 4.0 * in[N - 3] -
+			4.0 * in[N - 4] + 1.0 * in[N - 5] + 4.0 * in[N - 6] - 2.0 * in[N - 7]) / 42.0;
 	}
 }
 
@@ -86,6 +234,158 @@ float calculateDeepSigma(vector<float> resultSet)
 	return stdev;
 }
 
+
+//峰值检测算法 https://www.mathworks.com/help/signal/ref/findpeaks.html
+std::vector<int> FindLocalMaxima(std::vector<int> dataVector, int minProminence, int maxProminence, int minWidth, int maxWidth)
+{
+	int dataVectorSize = dataVector.size();
+	std::vector<int>localMaximaIndex, localMaximaValue, prominenceValue, inRangeLocalMaxima;
+	int j;
+	int currentValue, nextValue, prevValue;
+	int totalLocalMaxima;
+	int prevLocalMaximaIndex;
+	int nextLocalMaximaIndex;
+	int prevHigherLocalMaximaValue;
+	int nextHigherLocalMaximaValue;
+	int leftWidth, rightWidth, width;
+	int prevMinimum, nextMinimum, minimumValue;
+	int prominence;
+	int i = 1;
+	/********************* FIND LOCAL MAXIMA ***************************/
+	while (i<dataVectorSize-1)
+	{
+		j = 1;
+		currentValue = dataVector[i];
+		prevValue = dataVector[i - 1];
+		nextValue = dataVector[i + j];
+
+		if ((prevValue<currentValue) && (currentValue >= nextValue))
+		{
+			while ((currentValue == nextValue) && ((i + j)<dataVectorSize-1))
+			{
+				j++;
+				nextValue = dataVector[i + j];
+			}
+			if (currentValue>nextValue)
+			{
+				localMaximaIndex.push_back(i);
+				localMaximaValue.push_back(currentValue);
+			}
+		}
+		i += j;
+	}
+
+	totalLocalMaxima = localMaximaIndex.size();
+	prominenceValue.erase(prominenceValue.begin(), prominenceValue.end());
+
+	/********************* GET PROMINENCE ***************************/
+	for (i = 0; i<totalLocalMaxima; i++)
+	{
+		prevLocalMaximaIndex = i - 1;
+		nextLocalMaximaIndex = i + 1;
+		prevHigherLocalMaximaValue = 0;
+		nextHigherLocalMaximaValue = 0;
+
+		if (prevLocalMaximaIndex >= 0)
+		{
+			while ((prevLocalMaximaIndex >= 1) && (localMaximaValue[prevLocalMaximaIndex] <= localMaximaValue[i]))
+			{
+				prevLocalMaximaIndex--;
+			}
+			if (localMaximaValue[prevLocalMaximaIndex]>localMaximaValue[i]) {
+				prevHigherLocalMaximaValue = localMaximaValue[prevLocalMaximaIndex];
+			}
+			else {
+				prevHigherLocalMaximaValue = 0;
+			}
+		}
+		if (nextLocalMaximaIndex<totalLocalMaxima)
+		{
+			while ((nextLocalMaximaIndex<totalLocalMaxima - 1) && (localMaximaValue[nextLocalMaximaIndex] <= localMaximaValue[i]))//
+			{
+				nextLocalMaximaIndex++;
+			}
+			if (localMaximaValue[nextLocalMaximaIndex]>localMaximaValue[i]) {
+				nextHigherLocalMaximaValue = localMaximaValue[nextLocalMaximaIndex];
+			}
+			else {
+				nextHigherLocalMaximaValue = 0;
+			}
+		}
+		prevMinimum = dataVector[localMaximaIndex[i]];
+		nextMinimum = dataVector[localMaximaIndex[i]];
+		minimumValue = dataVector[localMaximaIndex[i]];
+		if ((prevHigherLocalMaximaValue == 0) && (nextHigherLocalMaximaValue == 0))
+		{
+			for (j = 0; j<dataVectorSize; j++)
+			{
+				if (dataVector[j]<minimumValue)
+					minimumValue = dataVector[j];
+			}
+
+
+		}
+		else
+		{
+			if (prevLocalMaximaIndex<0)
+			{
+				for (j = localMaximaIndex[i]; j >= 0; j--)
+				{
+					if (dataVector[j]<prevMinimum)
+						prevMinimum = dataVector[j];
+				}
+
+			}
+			else
+			{
+				for (j = localMaximaIndex[i]; j>localMaximaValue[prevLocalMaximaIndex]; j--)
+				{
+					if (dataVector[j]<prevMinimum)
+						prevMinimum = dataVector[j];
+				}
+
+			}
+			if (nextLocalMaximaIndex >= totalLocalMaxima - 1)
+			{
+				for (j = localMaximaIndex[i]; j<dataVectorSize; j++)
+				{
+					if (dataVector[j]<nextMinimum)
+						nextMinimum = dataVector[j];
+				}
+
+			}
+			else
+			{
+				for (j = localMaximaIndex[i]; j<localMaximaIndex[nextLocalMaximaIndex]; j++)
+				{
+					if (dataVector[j]<nextMinimum)
+						nextMinimum = dataVector[j];
+				}
+
+			}
+			minimumValue = prevMinimum>nextMinimum ? prevMinimum : nextMinimum;
+		}
+		prominence = localMaximaValue[i] - minimumValue;
+		/*************************** GET WIDTH ********************************/
+		j = 1;
+		while (((localMaximaIndex[i] - j)>0) && (dataVector[localMaximaIndex[i] - j] - minimumValue>(prominence) / 2)) { j++; }
+		leftWidth = j;
+		j = 1;
+		while (((localMaximaIndex[i] + j)<dataVectorSize) && (dataVector[localMaximaIndex[i] + j] - minimumValue>(prominence) / 2)) { j++; }
+		rightWidth = j;
+		int width = leftWidth + rightWidth;
+
+		/********************* IS THE PEAK IN RANGE? ***************************/
+		if ((localMaximaValue[i] - minimumValue >= minProminence) && (localMaximaValue[i] - minimumValue <= maxProminence) && (width >= minWidth) && (width <= maxWidth))
+		{
+			inRangeLocalMaxima.push_back(localMaximaIndex[i]);
+		}
+
+	}
+	cout << 1;
+	return inRangeLocalMaxima;
+	
+}
 
 
 /*功能：	假设两组高斯函数模型
@@ -286,6 +586,7 @@ void DeepWave::GetDeepData(HS_Lidar & hs)
 
 
 /*功能：		预处理数据：截取有效部分并进行去噪滤波操作
+//			深水采用SG滤波器 https://blog.csdn.net/liyuanbhu/article/details/11119081
 //&srcWave:	通道原始数据
 //&noise：	记录的噪声所属波段
 */
@@ -294,7 +595,34 @@ void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 	//高斯滤波去噪
 	vector<float> dstWave;
 	dstWave.assign(srcWave.begin(), srcWave.end());
-	deep_gaussian(&srcWave[0], &dstWave[0]);
+	
+	//申请数组内存
+	float *buffer = new float[dstWave.size()];
+	if (!dstWave.empty()) 
+	{ 
+		memcpy(buffer, &dstWave[0], dstWave.size() * sizeof(float));
+	}
+	float *buffer1 = new float[dstWave.size()];
+	float *buffer2 = new float[dstWave.size()];
+	float *buffer3 = new float[dstWave.size()];
+
+	//滤波操作
+	linearSmooth5(buffer, buffer1, dstWave.size());
+	quadraticSmooth5(buffer1, buffer2, dstWave.size());
+	cubicSmooth5(buffer2, buffer3, dstWave.size());
+
+	dstWave.assign(&buffer3[0], &buffer3[dstWave.size()]);
+
+
+	//释放内存
+	delete buffer; 
+	buffer = nullptr;
+	delete buffer1; 
+	buffer1 = nullptr;
+	delete buffer2; 
+	buffer2 = nullptr;
+	delete buffer3; 
+	buffer3 = nullptr;
 
 	noise = 0;
 	//计算随机噪声:两次滤波前后的波形数据的峰值差的均方差（标准差）
@@ -312,7 +640,7 @@ void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 //&srcWave:		通道原始数据
 //&waveParam：	该通道的高斯分量参数
 */
-void DeepWave::DeepResolve(vector<float> &srcWave, vector<DeepGaussParameter> &waveParam, float &noise)
+void DeepWave::DeepResolve(vector<float> &srcWave, vector<float> &waveParam, float &noise)
 {
 	//拷贝原始数据
 	vector<float> data,temp;
@@ -328,348 +656,189 @@ void DeepWave::DeepResolve(vector<float> &srcWave, vector<DeepGaussParameter> &w
 		*m -= backgroundNoise;
 	}
 
-	float A;	//振幅
-	float b;	//脉冲距离
-	float tg;	//峰值时间位置
-	float tgl;	//半峰时间位置（左)
-	float tgr;	//半峰时间位置（右）
-
-	bool wavetypeFlag = true;			//用来判断水表水底回波计算的flag
-	float surfaceMin, surfaceMax;	//水表回波位置所在的控制范围
-
-	//循环剥离过程
-	do
+	vector<int> intData;
+	for (auto d : data)
 	{
-		A = 0;
-		//找最大值并记录位置
-		vector<float>::iterator biggest = max_element(begin(data), end(data));
-		A = *biggest;
-		b = distance(data.begin(), biggest);
-
-
-		//寻找半宽位置
-		for (int m = b; m < data.size(); m++)
-		{
-			if ((data.at(m - 1) > A / 2) && (data.at(m + 1) < A / 2))
-			{
-				tgr = m;
-				break;
-			}
-		}
-		for (int m = b; m > 0; m--)
-		{
-			if ((data.at(m - 1) < A / 2) && (data.at(m + 1) > A / 2))
-			{
-				tgl = m;
-				break;
-			}
-		}
-		if ((b - tgl) > (tgr - b))
-		{
-			tg = tgr;
-		}
-		else
-		{
-			tg = tgl;
-		}
-
-		//计算sigma
-		float sigma = fabs(tg - b) / sqrt(2 * log(2));
-
-		//判断水表水底回波
-		if (wavetypeFlag == true)
-		{
-			//找右侧拐点
-			float rval = abs(data.at((int)b + 1) - data.at((int)b));
-			for (int i = b; b < data.size() - b; i++)
-			{
-				if (abs(data.at(i + 1) - data.at(i)) >= rval)
-					rval = abs(data.at(i + 1) - data.at(i));
-				else
-				{
-					surfaceMax = i + 2;
-					break;
-				}
-			}
-			//找左侧拐点
-			float lval = abs(data.at((int)b - 1) - data.at((int)b));
-			for (int i = b; b > 0; i--)
-			{
-				if (abs(data.at(i - 1) - data.at(i)) >= lval)
-					lval = abs(data.at(i - 1) - data.at(i));
-				else
-				{
-					surfaceMin = i - 2;
-					break;
-				}
-			}
-
-			wavetypeFlag = false;
-
-		}
-
-		if (surfaceMin <= b&& b <= surfaceMax)//在选定区域内的高斯分量为同一组件（真实水表+后向散射）
-		{
-			//将该组高斯分量参数压入向量
-			DeepGaussParameter param{ A,b,sigma,DEEPSURFACE };
-			waveParam.push_back(param);
-		}
-		else
-		{
-			//将该组高斯分量参数压入向量
-			DeepGaussParameter param{ A,b,sigma,DEEPBOTTOM };
-			waveParam.push_back(param);
-		}
-
-		//剥离
-		for (int m = 0; m < data.size(); m++)
-		{
-			if (data.at(m) > A*exp(-(m - b)*(m - b) / (2 * sigma*sigma)))
-			{
-				data.at(m) -= A*exp(-(m - b)*(m - b) / (2 * sigma*sigma));
-			}
-			else
-				data.at(m) = 0;
-		}
-
-		//判断是否继续剥离
-		A = 0;
-		for (int m = 0; m < data.size(); m++)
-		{
-			if (data.at(m) > A)
-			{
-				A = data.at(m);
-			}
-		}
-
-
-	} while (A >5 * noise);//循环条件!!!值得探讨
-
-
-	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
-	for (int i = 0; i<waveParam.size() - 1; i++)
-	{
-		for (int j = i + 1; j < waveParam.size(); j++)
-		{
-			if (abs(waveParam.at(i).Db - waveParam.at(j).Db) < DeepPulseWidth)//Key
-			{
-				if (waveParam.at(i).DA >= waveParam.at(j).DA)
-				{
-					waveParam.at(j).Dsigma = 0;
-				}
-				else
-				{
-					waveParam.at(i).Dsigma = 0;
-				}
-			}
-		}
+		intData.push_back((int)d);
 	}
 
-	//再将sigma小于阈值的分量剔除
-	for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end();)
-	{
-		if (DeepgaussPraIter->Dsigma < ((float)DeepPulseWidth / 8))
-		{
-			DeepgaussPraIter = waveParam.erase(DeepgaussPraIter);
-		}
-		else
-		{
-			++DeepgaussPraIter;
-		}
-	}
+	//寻找峰值
+	FindLocalMaxima(intData, 10, 900, 4, 50);
+
+	//for (auto ans : answer)
+	//{
+	//	waveParam.push_back((float)ans);
+	//}
 }
 
 
-/*功能：			LM算法迭代优化
-//&srcWave:		通道原始数据
-//&waveParam：	该通道的高斯分量参数
-//LM算法参考：	https://blog.csdn.net/shajun0153/article/details/75073137
-*/
-void DeepWave::DeepOptimize(vector<float> &srcWave, vector<DeepGaussParameter> &waveParam)
-{
-	//解算初值为双峰
-	if (waveParam.size() == 2)
-	{
-		//获取高斯函数参数
-		double p[6];
-		int i = 0;
-		for (auto gp : waveParam)
-		{
-			p[i++] = gp.DA;
-			p[i++] = gp.Db;
-			p[i++] = gp.Dsigma;
-		}
-		int m = i;
-		int n = srcWave.size();
-
-		//获取拟合数据
-		double x[800];
-		i = 0;
-		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
-		{
-			x[i] = *iter;
-		}
-
-		double info[LM_INFO_SZ];
-		// 调用迭代入口函数
-		int ret = dlevmar_der(deep_expfun2,	//描述测量值之间关系的函数指针
-			deep_jacexpfun2,					//估计雅克比矩阵的函数指针
-			p,							//初始化的待求参数，结果一并保存在其中
-			x,							//测量值
-			m,							//参数维度
-			n,							//测量值维度
-			1000,						//最大迭代次数
-			NULL,						//opts,       //迭代的一些参数
-			info,						//关于最小化结果的一些参数，不需要设为NULL
-			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-		);
-		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
-		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
-		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
-
-		//将优化后的参数组赋给vector
-		i = 0;
-		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
-		{
-			DeepgaussPraIter->DA = p[i++];
-			DeepgaussPraIter->Db = p[i++];
-			DeepgaussPraIter->Dsigma = p[i++];
-		}
-	}
-
-	//解算初值为三个峰
-	else if (waveParam.size() == 3)
-	{
-		//获取高斯函数参数
-		double p[9];
-		int i = 0;
-		for (auto gp : waveParam)
-		{
-			p[i++] = gp.DA;
-			p[i++] = gp.Db;
-			p[i++] = gp.Dsigma;
-		}
-		int m = i;
-		int n = srcWave.size();
-
-		//获取拟合数据
-		double x[800];
-		i = 0;
-		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
-		{
-			x[i] = *iter;
-		}
-
-		double info[LM_INFO_SZ];
-		// 调用迭代入口函数
-		int ret = dlevmar_der(deep_expfun3,	//描述测量值之间关系的函数指针
-			deep_jacexpfun3,					//估计雅克比矩阵的函数指针
-			p,							//初始化的待求参数，结果一并保存在其中
-			x,							//测量值
-			m,							//参数维度
-			n,							//测量值维度
-			1000,						//最大迭代次数
-			NULL,						//opts,       //迭代的一些参数
-			info,						//关于最小化结果的一些参数，不需要设为NULL
-			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-		);
-		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
-		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
-		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
-
-		//将优化后的参数组赋给vector
-		i = 0;
-		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
-		{
-			DeepgaussPraIter->DA = p[i++];
-			DeepgaussPraIter->Db = p[i++];
-			DeepgaussPraIter->Dsigma = p[i++];
-		}
-	}
-
-	//解算初值为四个个峰
-	else if (waveParam.size() == 4)
-	{
-		//获取高斯函数参数
-		double p[12];
-		int i = 0;
-		for (auto gp : waveParam)
-		{
-			p[i++] = gp.DA;
-			p[i++] = gp.Db;
-			p[i++] = gp.Dsigma;
-		}
-		int m = i;
-		int n = srcWave.size();
-
-		//获取拟合数据
-		double x[800];
-		i = 0;
-		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
-		{
-			x[i] = *iter;
-		}
-
-		double info[LM_INFO_SZ];
-		// 调用迭代入口函数
-		int ret = dlevmar_der(deep_expfun4,	//描述测量值之间关系的函数指针
-			deep_jacexpfun4,					//估计雅克比矩阵的函数指针
-			p,							//初始化的待求参数，结果一并保存在其中
-			x,							//测量值
-			m,							//参数维度
-			n,							//测量值维度
-			1000,						//最大迭代次数
-			NULL,						//opts,       //迭代的一些参数
-			info,						//关于最小化结果的一些参数，不需要设为NULL
-			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-		);
-		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
-		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
-		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
-
-		//将优化后的参数组赋给vector
-		i = 0;
-		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
-		{
-			DeepgaussPraIter->DA = p[i++];
-			DeepgaussPraIter->Db = p[i++];
-			DeepgaussPraIter->Dsigma = p[i++];
-		}
-	}
-
-	return;
-}
-
-
+///*功能：			LM算法迭代优化
+////&srcWave:		通道原始数据
+////&waveParam：	该通道的高斯分量参数
+////LM算法参考：	https://blog.csdn.net/shajun0153/article/details/75073137
+//*/
+//void DeepWave::DeepOptimize(vector<float> &srcWave, vector<float> &waveParam)
+//{
+//	//解算初值为双峰
+//	if (waveParam.size() == 2)
+//	{
+//		//获取高斯函数参数
+//		double p[6];
+//		int i = 0;
+//		for (auto gp : waveParam)
+//		{
+//			p[i++] = gp.DA;
+//			p[i++] = gp.Db;
+//			p[i++] = gp.Dsigma;
+//		}
+//		int m = i;
+//		int n = srcWave.size();
+//
+//		//获取拟合数据
+//		double x[800];
+//		i = 0;
+//		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
+//		{
+//			x[i] = *iter;
+//		}
+//
+//		double info[LM_INFO_SZ];
+//		// 调用迭代入口函数
+//		int ret = dlevmar_der(deep_expfun2,	//描述测量值之间关系的函数指针
+//			deep_jacexpfun2,					//估计雅克比矩阵的函数指针
+//			p,							//初始化的待求参数，结果一并保存在其中
+//			x,							//测量值
+//			m,							//参数维度
+//			n,							//测量值维度
+//			1000,						//最大迭代次数
+//			NULL,						//opts,       //迭代的一些参数
+//			info,						//关于最小化结果的一些参数，不需要设为NULL
+//			NULL, NULL, NULL			//一些内存的指针，暂时不需要
+//		);
+//		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
+//		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
+//		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
+//
+//		//将优化后的参数组赋给vector
+//		i = 0;
+//		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
+//		{
+//			DeepgaussPraIter->DA = p[i++];
+//			DeepgaussPraIter->Db = p[i++];
+//			DeepgaussPraIter->Dsigma = p[i++];
+//		}
+//	}
+//
+//	//解算初值为三个峰
+//	else if (waveParam.size() == 3)
+//	{
+//		//获取高斯函数参数
+//		double p[9];
+//		int i = 0;
+//		for (auto gp : waveParam)
+//		{
+//			p[i++] = gp.DA;
+//			p[i++] = gp.Db;
+//			p[i++] = gp.Dsigma;
+//		}
+//		int m = i;
+//		int n = srcWave.size();
+//
+//		//获取拟合数据
+//		double x[800];
+//		i = 0;
+//		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
+//		{
+//			x[i] = *iter;
+//		}
+//
+//		double info[LM_INFO_SZ];
+//		// 调用迭代入口函数
+//		int ret = dlevmar_der(deep_expfun3,	//描述测量值之间关系的函数指针
+//			deep_jacexpfun3,					//估计雅克比矩阵的函数指针
+//			p,							//初始化的待求参数，结果一并保存在其中
+//			x,							//测量值
+//			m,							//参数维度
+//			n,							//测量值维度
+//			1000,						//最大迭代次数
+//			NULL,						//opts,       //迭代的一些参数
+//			info,						//关于最小化结果的一些参数，不需要设为NULL
+//			NULL, NULL, NULL			//一些内存的指针，暂时不需要
+//		);
+//		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
+//		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
+//		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
+//
+//		//将优化后的参数组赋给vector
+//		i = 0;
+//		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
+//		{
+//			DeepgaussPraIter->DA = p[i++];
+//			DeepgaussPraIter->Db = p[i++];
+//			DeepgaussPraIter->Dsigma = p[i++];
+//		}
+//	}
+//
+//	//解算初值为四个个峰
+//	else if (waveParam.size() == 4)
+//	{
+//		//获取高斯函数参数
+//		double p[12];
+//		int i = 0;
+//		for (auto gp : waveParam)
+//		{
+//			p[i++] = gp.DA;
+//			p[i++] = gp.Db;
+//			p[i++] = gp.Dsigma;
+//		}
+//		int m = i;
+//		int n = srcWave.size();
+//
+//		//获取拟合数据
+//		double x[800];
+//		i = 0;
+//		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
+//		{
+//			x[i] = *iter;
+//		}
+//
+//		double info[LM_INFO_SZ];
+//		// 调用迭代入口函数
+//		int ret = dlevmar_der(deep_expfun4,	//描述测量值之间关系的函数指针
+//			deep_jacexpfun4,					//估计雅克比矩阵的函数指针
+//			p,							//初始化的待求参数，结果一并保存在其中
+//			x,							//测量值
+//			m,							//参数维度
+//			n,							//测量值维度
+//			1000,						//最大迭代次数
+//			NULL,						//opts,       //迭代的一些参数
+//			info,						//关于最小化结果的一些参数，不需要设为NULL
+//			NULL, NULL, NULL			//一些内存的指针，暂时不需要
+//		);
+//		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
+//		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
+//		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
+//
+//		//将优化后的参数组赋给vector
+//		i = 0;
+//		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
+//		{
+//			DeepgaussPraIter->DA = p[i++];
+//			DeepgaussPraIter->Db = p[i++];
+//			DeepgaussPraIter->Dsigma = p[i++];
+//		}
+//	}
+//
+//	return;
+//}
+//
+//
 /*功能：	计算水深
 //内容：	提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深
 */
-void DeepWave::calculateDeepDepth(vector<DeepGaussParameter>& waveParam, float &BorGDepth)
+void DeepWave::calculateDeepDepth(vector<float>& waveParam, float &BorGDepth)
 {
-	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
-	{
-		BorGDepth = 0;
-	}
-	else
-	{
-		DeepgaussPraIter = waveParam.begin();
-		float tbegin = DeepgaussPraIter->Db;
-		float tend = tbegin;
-
-		for (DeepgaussPraIter = waveParam.begin() + 1; DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
-		{
-
-			if ((DeepgaussPraIter->Db > tend) && (DeepgaussPraIter->deepwavetype == DEEPBOTTOM))//水底回波必定出现在水表回波的后续时刻，为与底部返回噪声区别，假定其与水面回波的回波时差在两个波峰内（考虑水体后向散射）
-			{
-				tend = DeepgaussPraIter->Db;
-				break;
-			}
-		}
-		//gaussPraIter = waveParam.end()-1;			//!!!坑
-		//float tend = gaussPraIter->b;
-
-		BorGDepth = c*(tend - tbegin) / (2 * ndeepwater);
-	}
+	return ;
 }
 
 
@@ -691,24 +860,12 @@ ostream &operator<<(ostream & stream, const DeepWave & wavedata)
 	case BLUE: {
 		stream << " " << wavedata.blueDeepDepth << "m";
 
-		if (!wavedata.m_BlueDeepGauPra.empty())
-		{
-			for (auto p : wavedata.m_BlueDeepGauPra)
-			{
-				stream << " " << p.Db;
-			}
-		}
+	
 		break;
 	}
 	case GREEN: {
 		stream << " " << wavedata.greenDeepDepth << "m";
-		if (!wavedata.m_GreenDeepGauPra.empty())
-		{
-			for (auto p : wavedata.m_GreenDeepGauPra)
-			{
-				stream << " " << p.Db;
-			}
-		}
+		
 		break;
 	}
 	}

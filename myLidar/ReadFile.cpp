@@ -515,19 +515,19 @@ void ReadFile::readDeep()
 				DeepWave::ostreamFlag = BLUE;
 
 				dw.DeepFilter(dw.m_BlueDeep, dw.m_BlueDeepNoise);
-				dw.DeepResolve(dw.m_BlueDeep, dw.m_BlueDeepGauPra, dw.m_BlueDeepNoise);
-				dw.DeepOptimize(dw.m_BlueDeep, dw.m_BlueDeepGauPra);
+				dw.DeepResolve(dw.m_BlueDeep, dw.m_BlueDeepPra, dw.m_BlueDeepNoise);
+				//dw.DeepOptimize(dw.m_BlueDeep, dw.m_BlueDeepGauPra);
 
-				dw.calculateDeepDepth(dw.m_BlueDeepGauPra, dw.blueDeepDepth);
+				//dw.calculateDeepDepth(dw.m_BlueDeepGauPra, dw.blueDeepDepth);
 				break;
 			case GREEN:
 				DeepWave::ostreamFlag = GREEN;
 
 				dw.DeepFilter(dw.m_GreenDeep, dw.m_GreenDeepNoise);
-				dw.DeepResolve(dw.m_GreenDeep, dw.m_GreenDeepGauPra, dw.m_GreenDeepNoise);
-				dw.DeepOptimize(dw.m_GreenDeep, dw.m_GreenDeepGauPra);
+				dw.DeepResolve(dw.m_GreenDeep, dw.m_GreenDeepPra, dw.m_GreenDeepNoise);
+				//dw.DeepOptimize(dw.m_GreenDeep, dw.m_GreenDeepGauPra);
 
-				dw.calculateDeepDepth(dw.m_GreenDeepGauPra, dw.greenDeepDepth);
+				//dw.calculateDeepDepth(dw.m_GreenDeepGauPra, dw.greenDeepDepth);
 				break;
 			default:
 				break;
