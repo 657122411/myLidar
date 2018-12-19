@@ -236,10 +236,10 @@ float calculateDeepSigma(vector<float> resultSet)
 
 
 //峰值检测算法 https://www.mathworks.com/help/signal/ref/findpeaks.html
-std::vector<int> FindLocalMaxima(std::vector<int> dataVector, int minProminence, int maxProminence, int minWidth, int maxWidth)
+vector<int> FindLocalMaxima(vector<float> dataVector, int minProminence, int maxProminence, int minWidth, int maxWidth)
 {
 	int dataVectorSize = dataVector.size();
-	std::vector<int>localMaximaIndex, localMaximaValue, prominenceValue, inRangeLocalMaxima;
+	vector<int>localMaximaIndex, localMaximaValue, prominenceValue, inRangeLocalMaxima;
 	int j;
 	int currentValue, nextValue, prevValue;
 	int totalLocalMaxima;
@@ -382,9 +382,8 @@ std::vector<int> FindLocalMaxima(std::vector<int> dataVector, int minProminence,
 		}
 
 	}
-	cout << 1;
+
 	return inRangeLocalMaxima;
-	
 }
 
 
@@ -427,108 +426,6 @@ void deep_jacexpfun2(double *p, double *jac, int m, int n, void *data)
 		jac[j++] = exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*p[5]);
 		jac[j++] = p[3] * (i - p[4]) / (p[5] * p[5])*exp(-(i - p[4])*(i - p[4]) / (2 * p[5] * p[5]));
 		jac[j++] = p[3] * (i - p[4])*(i - p[4]) / (p[5] * p[5] * p[5])*exp(-(i - p[4])*(i - p[4]) / (2 * p[5] * p[5]));
-	}
-}
-
-
-/*功能：	假设三组高斯函数模型
-//*p:	代求参数
-//*x：  原始数据（测量值）
-//m：	参数维度
-//n：	测量值维度
-//*data:？
-*/
-void deep_expfun3(double *p, double *x, int m, int n, void *data)
-{
-	register int i;
-	for (i = 0; i<n; ++i)
-	{
-		//写出参数与x[i]之间的关系式，由于这里方程的右边没有观测值，所以只有参数
-		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2]))
-			+ p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]))
-			+ p[6] * exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*(2 * p[8]));
-	}
-}
-
-
-/*功能：	三组高斯函数模型的雅可比矩阵
-//*p:	代求参数
-//jac： 雅可比矩阵参数
-//m：	参数维度
-//n：	测量值维度
-//*data:？
-*/
-void deep_jacexpfun3(double *p, double *jac, int m, int n, void *data)
-{
-	register int i, j;
-	//写出雅克比矩阵
-	for (i = j = 0; i<n; ++i)
-	{
-		jac[j++] = exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*p[2]);
-		jac[j++] = p[0] * (i - p[1]) / (p[2] * p[2])*exp(-(i - p[1])*(i - p[1]) / (2 * p[2] * p[2]));
-		jac[j++] = p[0] * (i - p[1])*(i - p[1]) / (p[2] * p[2] * p[2])*exp(-(i - p[1])*(i - p[1]) / (2 * p[2] * p[2]));
-
-		jac[j++] = exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*p[5]);
-		jac[j++] = p[3] * (i - p[4]) / (p[5] * p[5])*exp(-(i - p[4])*(i - p[4]) / (2 * p[5] * p[5]));
-		jac[j++] = p[3] * (i - p[4])*(i - p[4]) / (p[5] * p[5] * p[5])*exp(-(i - p[4])*(i - p[4]) / (2 * p[5] * p[5]));
-
-		jac[j++] = exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*p[8]);
-		jac[j++] = p[6] * (i - p[7]) / (p[8] * p[8])*exp(-(i - p[7])*(i - p[7]) / (2 * p[8] * p[8]));
-		jac[j++] = p[6] * (i - p[7])*(i - p[7]) / (p[8] * p[8] * p[8])*exp(-(i - p[7])*(i - p[7]) / (2 * p[8] * p[8]));
-	}
-}
-
-
-/*功能：	假设四组高斯函数模型
-//*p:	代求参数
-//*x：  原始数据（测量值）
-//m：	参数维度
-//n：	测量值维度
-//*data:？
-*/
-void deep_expfun4(double *p, double *x, int m, int n, void *data)
-{
-	register int i;
-	for (i = 0; i<n; ++i)
-	{
-		//写出参数与x[i]之间的关系式，由于这里方程的右边没有观测值，所以只有参数
-		x[i] = p[0] * exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*(2 * p[2]))
-			+ p[3] * exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*(2 * p[5]))
-			+ p[6] * exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*(2 * p[8]))
-			+ p[9] * exp(-(i - p[10])*(i - p[10]) / (2 * p[11])*(2 * p[11]));
-	}
-
-}
-
-
-/*功能：	四组高斯函数模型的雅可比矩阵
-//*p:	代求参数
-//jac： 雅可比矩阵参数
-//m：	参数维度
-//n：	测量值维度
-//*data:？
-*/
-void deep_jacexpfun4(double *p, double *jac, int m, int n, void *data)
-{
-	register int i, j;
-	//写出雅克比矩阵
-	for (i = j = 0; i<n; ++i)
-	{
-		jac[j++] = exp(-(i - p[1])*(i - p[1]) / (2 * p[2])*p[2]);
-		jac[j++] = p[0] * (i - p[1]) / (p[2] * p[2])*exp(-(i - p[1])*(i - p[1]) / (2 * p[2] * p[2]));
-		jac[j++] = p[0] * (i - p[1])*(i - p[1]) / (p[2] * p[2] * p[2])*exp(-(i - p[1])*(i - p[1]) / (2 * p[2] * p[2]));
-
-		jac[j++] = exp(-(i - p[4])*(i - p[4]) / (2 * p[5])*p[5]);
-		jac[j++] = p[3] * (i - p[4]) / (p[5] * p[5])*exp(-(i - p[4])*(i - p[4]) / (2 * p[5] * p[5]));
-		jac[j++] = p[3] * (i - p[4])*(i - p[4]) / (p[5] * p[5] * p[5])*exp(-(i - p[4])*(i - p[4]) / (2 * p[5] * p[5]));
-
-		jac[j++] = exp(-(i - p[7])*(i - p[7]) / (2 * p[8])*p[8]);
-		jac[j++] = p[6] * (i - p[7]) / (p[8] * p[8])*exp(-(i - p[7])*(i - p[7]) / (2 * p[8] * p[8]));
-		jac[j++] = p[6] * (i - p[7])*(i - p[7]) / (p[8] * p[8] * p[8])*exp(-(i - p[7])*(i - p[7]) / (2 * p[8] * p[8]));
-
-		jac[j++] = exp(-(i - p[10])*(i - p[10]) / (2 * p[11])*p[11]);
-		jac[j++] = p[9] * (i - p[10]) / (p[11] * p[11])*exp(-(i - p[10])*(i - p[10]) / (2 * p[11] * p[11]));
-		jac[j++] = p[9] * (i - p[10])*(i - p[10]) / (p[11] * p[11] * p[11])*exp(-(i - p[10])*(i - p[10]) / (2 * p[11] * p[11]));
 	}
 }
 
@@ -636,9 +533,10 @@ void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 }
 
 
-/*功能：			高斯分量分解函数
+/*功能：			峰值检测解算函数
 //&srcWave:		通道原始数据
-//&waveParam：	该通道的高斯分量参数
+//&waveParam：	该通道的峰值索引
+//&noise：		该通道的噪声
 */
 void DeepWave::DeepResolve(vector<float> &srcWave, vector<float> &waveParam, float &noise)
 {
@@ -656,189 +554,45 @@ void DeepWave::DeepResolve(vector<float> &srcWave, vector<float> &waveParam, flo
 		*m -= backgroundNoise;
 	}
 
-	vector<int> intData;
-	for (auto d : data)
-	{
-		intData.push_back((int)d);
-	}
-
 	//寻找峰值
-	FindLocalMaxima(intData, 10, 900, 4, 50);
+	vector<int>answer = FindLocalMaxima(data, 3, 800, 1, 20);//阈值限制条件！！！
 
-	//for (auto ans : answer)
-	//{
-	//	waveParam.push_back((float)ans);
-	//}
+	//保存峰值点索引
+	for (auto ans : answer)
+	{
+		waveParam.push_back((float)ans);
+	}
 }
 
 
-///*功能：			LM算法迭代优化
-////&srcWave:		通道原始数据
-////&waveParam：	该通道的高斯分量参数
-////LM算法参考：	https://blog.csdn.net/shajun0153/article/details/75073137
-//*/
-//void DeepWave::DeepOptimize(vector<float> &srcWave, vector<float> &waveParam)
-//{
-//	//解算初值为双峰
-//	if (waveParam.size() == 2)
-//	{
-//		//获取高斯函数参数
-//		double p[6];
-//		int i = 0;
-//		for (auto gp : waveParam)
-//		{
-//			p[i++] = gp.DA;
-//			p[i++] = gp.Db;
-//			p[i++] = gp.Dsigma;
-//		}
-//		int m = i;
-//		int n = srcWave.size();
-//
-//		//获取拟合数据
-//		double x[800];
-//		i = 0;
-//		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
-//		{
-//			x[i] = *iter;
-//		}
-//
-//		double info[LM_INFO_SZ];
-//		// 调用迭代入口函数
-//		int ret = dlevmar_der(deep_expfun2,	//描述测量值之间关系的函数指针
-//			deep_jacexpfun2,					//估计雅克比矩阵的函数指针
-//			p,							//初始化的待求参数，结果一并保存在其中
-//			x,							//测量值
-//			m,							//参数维度
-//			n,							//测量值维度
-//			1000,						//最大迭代次数
-//			NULL,						//opts,       //迭代的一些参数
-//			info,						//关于最小化结果的一些参数，不需要设为NULL
-//			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-//		);
-//		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
-//		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
-//		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
-//
-//		//将优化后的参数组赋给vector
-//		i = 0;
-//		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
-//		{
-//			DeepgaussPraIter->DA = p[i++];
-//			DeepgaussPraIter->Db = p[i++];
-//			DeepgaussPraIter->Dsigma = p[i++];
-//		}
-//	}
-//
-//	//解算初值为三个峰
-//	else if (waveParam.size() == 3)
-//	{
-//		//获取高斯函数参数
-//		double p[9];
-//		int i = 0;
-//		for (auto gp : waveParam)
-//		{
-//			p[i++] = gp.DA;
-//			p[i++] = gp.Db;
-//			p[i++] = gp.Dsigma;
-//		}
-//		int m = i;
-//		int n = srcWave.size();
-//
-//		//获取拟合数据
-//		double x[800];
-//		i = 0;
-//		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
-//		{
-//			x[i] = *iter;
-//		}
-//
-//		double info[LM_INFO_SZ];
-//		// 调用迭代入口函数
-//		int ret = dlevmar_der(deep_expfun3,	//描述测量值之间关系的函数指针
-//			deep_jacexpfun3,					//估计雅克比矩阵的函数指针
-//			p,							//初始化的待求参数，结果一并保存在其中
-//			x,							//测量值
-//			m,							//参数维度
-//			n,							//测量值维度
-//			1000,						//最大迭代次数
-//			NULL,						//opts,       //迭代的一些参数
-//			info,						//关于最小化结果的一些参数，不需要设为NULL
-//			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-//		);
-//		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
-//		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
-//		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
-//
-//		//将优化后的参数组赋给vector
-//		i = 0;
-//		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
-//		{
-//			DeepgaussPraIter->DA = p[i++];
-//			DeepgaussPraIter->Db = p[i++];
-//			DeepgaussPraIter->Dsigma = p[i++];
-//		}
-//	}
-//
-//	//解算初值为四个个峰
-//	else if (waveParam.size() == 4)
-//	{
-//		//获取高斯函数参数
-//		double p[12];
-//		int i = 0;
-//		for (auto gp : waveParam)
-//		{
-//			p[i++] = gp.DA;
-//			p[i++] = gp.Db;
-//			p[i++] = gp.Dsigma;
-//		}
-//		int m = i;
-//		int n = srcWave.size();
-//
-//		//获取拟合数据
-//		double x[800];
-//		i = 0;
-//		for (vector<float>::iterator iter = srcWave.begin(); iter != srcWave.end(); ++iter, ++i)
-//		{
-//			x[i] = *iter;
-//		}
-//
-//		double info[LM_INFO_SZ];
-//		// 调用迭代入口函数
-//		int ret = dlevmar_der(deep_expfun4,	//描述测量值之间关系的函数指针
-//			deep_jacexpfun4,					//估计雅克比矩阵的函数指针
-//			p,							//初始化的待求参数，结果一并保存在其中
-//			x,							//测量值
-//			m,							//参数维度
-//			n,							//测量值维度
-//			1000,						//最大迭代次数
-//			NULL,						//opts,       //迭代的一些参数
-//			info,						//关于最小化结果的一些参数，不需要设为NULL
-//			NULL, NULL, NULL			//一些内存的指针，暂时不需要
-//		);
-//		/*printf("Levenberg-Marquardt returned in %g iter, reason %g, sumsq %g [%g]\n", info[5], info[6], info[1], info[0]);
-//		printf("Bestfit parameters: A:%.7g b:%.7g sigma:%.7g A:%.7g b:%.7g sigma:%.7g\n", p[0], p[1], p[2], p[3], p[4], p[5]);
-//		printf("波峰时间差: %.7g ns\n", abs(p[4] - p[1]));*/
-//
-//		//将优化后的参数组赋给vector
-//		i = 0;
-//		for (DeepgaussPraIter = waveParam.begin(); DeepgaussPraIter != waveParam.end(); DeepgaussPraIter++)
-//		{
-//			DeepgaussPraIter->DA = p[i++];
-//			DeepgaussPraIter->Db = p[i++];
-//			DeepgaussPraIter->Dsigma = p[i++];
-//		}
-//	}
-//
-//	return;
-//}
-//
-//
+/*功能：			LM算法迭代优化
+//&srcWave:		通道原始数据
+//&waveParam：	该通道的高斯分量参数
+//LM算法参考：	https://blog.csdn.net/shajun0153/article/details/75073137
+*/
+void DeepWave::DeepOptimize(vector<float> &srcWave, vector<float> &waveParam)
+{
+
+	return;
+}
+
+
 /*功能：	计算水深
 //内容：	提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深
 */
 void DeepWave::calculateDeepDepth(vector<float>& waveParam, float &BorGDepth)
 {
-	return ;
+	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
+	{
+		BorGDepth = 0;
+	}
+	else
+	{
+		float tbegin = *min_element(waveParam.begin(),waveParam.end());
+		float tend = *max_element(waveParam.begin(), waveParam.end());
+
+		BorGDepth = c*(tend - tbegin) / (2 * ndeepwater);
+	}
 }
 
 
@@ -860,12 +614,24 @@ ostream &operator<<(ostream & stream, const DeepWave & wavedata)
 	case BLUE: {
 		stream << " " << wavedata.blueDeepDepth << "m";
 
-	
+		if (!wavedata.m_BlueDeepPra.empty())
+		{
+			for (auto p : wavedata.m_BlueDeepPra)
+			{
+				stream << " " << p;
+			}
+		}
 		break;
 	}
 	case GREEN: {
 		stream << " " << wavedata.greenDeepDepth << "m";
-		
+		if (!wavedata.m_GreenDeepPra.empty())
+		{
+			for (auto p : wavedata.m_GreenDeepPra)
+			{
+				stream << " " << p;
+			}
+		}
 		break;
 	}
 	}

@@ -484,7 +484,6 @@ void ReadFile::readDeep()
 	float blueStd, greenStd;
 
 
-
 	//遍历文件获取数据
 	do {
 		_fseeki64(m_filePtr, j * 8, SEEK_SET);
@@ -516,18 +515,18 @@ void ReadFile::readDeep()
 
 				dw.DeepFilter(dw.m_BlueDeep, dw.m_BlueDeepNoise);
 				dw.DeepResolve(dw.m_BlueDeep, dw.m_BlueDeepPra, dw.m_BlueDeepNoise);
-				//dw.DeepOptimize(dw.m_BlueDeep, dw.m_BlueDeepGauPra);
+				dw.DeepOptimize(dw.m_BlueDeep, dw.m_BlueDeepPra);
 
-				//dw.calculateDeepDepth(dw.m_BlueDeepGauPra, dw.blueDeepDepth);
+				dw.calculateDeepDepth(dw.m_BlueDeepPra, dw.blueDeepDepth);
 				break;
 			case GREEN:
 				DeepWave::ostreamFlag = GREEN;
 
 				dw.DeepFilter(dw.m_GreenDeep, dw.m_GreenDeepNoise);
 				dw.DeepResolve(dw.m_GreenDeep, dw.m_GreenDeepPra, dw.m_GreenDeepNoise);
-				//dw.DeepOptimize(dw.m_GreenDeep, dw.m_GreenDeepGauPra);
+				dw.DeepOptimize(dw.m_GreenDeep, dw.m_GreenDeepPra);
 
-				//dw.calculateDeepDepth(dw.m_GreenDeepGauPra, dw.greenDeepDepth);
+				dw.calculateDeepDepth(dw.m_GreenDeepPra, dw.greenDeepDepth);
 				break;
 			default:
 				break;
