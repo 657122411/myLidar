@@ -3,6 +3,7 @@
 #include <iostream>
 #include "WaveData.h"
 #include "DeepWave.h"
+#include <iomanip>
 using namespace std;
 
 class ReadFile

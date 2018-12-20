@@ -440,6 +440,7 @@ DeepWave::DeepWave()
 	m_GreenDeepNoise = 0;
 	blueDeepDepth = 0;
 	greenDeepDepth = 0;
+	redTime = 0;
 }
 
 
@@ -643,11 +644,18 @@ ostream &operator<<(ostream & stream, const DeepWave & wavedata)
 		<< wavedata.m_time.minute << " "
 		<< wavedata.m_time.second;
 
+
 	//兴趣数据暂定为制定通道的波峰所在相对位置
 	switch (wavedata.ostreamFlag)
 	{
 	case BLUE: {
 		stream << " " << wavedata.blueDeepDepth << "m";
+
+		//近红外通道数据
+		if (wavedata.redTime != 0)
+		{
+			stream << " " << wavedata.redTime<<" "<<"|";
+		}
 
 		if (!wavedata.m_BlueDeepPra.empty())
 		{
@@ -660,6 +668,13 @@ ostream &operator<<(ostream & stream, const DeepWave & wavedata)
 	}
 	case GREEN: {
 		stream << " " << wavedata.greenDeepDepth << "m";
+
+		//近红外通道数据
+		if (wavedata.redTime != 0)
+		{
+			stream << " " << wavedata.redTime <<" "<< "|";
+		}
+
 		if (!wavedata.m_GreenDeepPra.empty())
 		{
 			for (auto p : wavedata.m_GreenDeepPra)

@@ -102,9 +102,10 @@ void ReadFile::readBlueAll()
 			j += 336;
 
 			//打印处理进程情况
-			cout.width(3);
-			cout << int(/*100 * 8 **/ j / (length / 800)) << "%";
-			cout << "\b\b\b\b";
+			cout.width(5);//宽度
+			//设置输出精度，保留有效数字
+			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
+			cout << "\b\b\b\b\b\b";
 
 		}
 		else
@@ -174,9 +175,10 @@ void ReadFile::readGreenAll()
 			j += 336;
 
 			//打印处理进程情况
-			cout.width(3);
-			cout << int(/*100 * 8 **/ j / (length/800)) << "%";
-			cout << "\b\b\b\b";
+			cout.width(5);//宽度
+			//设置输出精度，保留有效数字
+			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
+			cout << "\b\b\b\b\b\b";
 
 		}
 		else
@@ -269,9 +271,10 @@ void ReadFile::readMix()
 			j += 336;
 
 			//打印处理进程情况
-			cout.width(3);
-			cout << int(/*100 * 8 **/ j / (length / 800)) << "%";
-			cout << "\b\b\b\b";
+			cout.width(5);//宽度
+			//设置输出精度，保留有效数字
+			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
+			cout << "\b\b\b\b\b\b";
 
 		}
 		else
@@ -434,9 +437,10 @@ void ReadFile::outputData()
 			j += 336;
 
 			//打印处理进程情况
-			cout.width(3);
-			cout << int(/*100 * 8 **/ j / (length / 800)) << "%";
-			cout << "\b\b\b\b";
+			cout.width(5);//宽度
+			//设置输出精度，保留有效数字
+			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
+			cout << "\b\b\b\b\b\b";
 
 		}
 		else
@@ -539,9 +543,10 @@ void ReadFile::readDeep()
 			j += 336;
 
 			//打印处理进程情况
-			cout.width(3);
-			cout << int(/*100 * 8 **/ j / (length / 800)) << "%";
-			cout << "\b\b\b\b";
+			cout.width(5);//宽度
+		    //设置输出精度，保留有效数字
+			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
+			cout << "\b\b\b\b\b\b";
 
 		}
 		else
@@ -641,9 +646,10 @@ void ReadFile::readDeepByRed()
 			j += 336;
 
 			//打印处理进程情况
-			cout.width(3);
-			cout << int(/*100 * 8 **/ j / (length / 800)) << "%";
-			cout << "\b\b\b\b";
+			cout.width(5);//宽度
+			//设置输出精度，保留有效数字
+			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
+			cout << "\b\b\b\b\b\b";
 
 		}
 		else
