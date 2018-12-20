@@ -93,7 +93,7 @@ void ReadFile::readBlueAll()
 			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra,mywave.m_BlueNoise);
 			mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
 			
-			mywave.calculateDepth(mywave.m_BlueGauPra,mywave.blueDepth);
+			mywave.CalcuDepth(mywave.m_BlueGauPra,mywave.blueDepth);
 
 			//输出信息到文件
 			output_stream << mywave;
@@ -165,7 +165,7 @@ void ReadFile::readGreenAll()
 			mywave.Resolve(mywave.m_GreenWave, mywave.m_GreenGauPra, mywave.m_GreenNoise);
 			mywave.Optimize(mywave.m_GreenWave, mywave.m_GreenGauPra);
 
-			mywave.calculateDepth(mywave.m_GreenGauPra, mywave.greenDepth);
+			mywave.CalcuDepth(mywave.m_GreenGauPra, mywave.greenDepth);
 
 			//输出信息到文件
 			output_stream << mywave;
@@ -247,7 +247,7 @@ void ReadFile::readMix()
 				mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra, mywave.m_BlueNoise);
 				mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
 
-				mywave.calculateDepth(mywave.m_BlueGauPra, mywave.blueDepth);
+				mywave.CalcuDepth(mywave.m_BlueGauPra, mywave.blueDepth);
 				break;
 			case GREEN:
 				WaveData::ostreamFlag = GREEN;
@@ -256,7 +256,7 @@ void ReadFile::readMix()
 				mywave.Resolve(mywave.m_GreenWave, mywave.m_GreenGauPra, mywave.m_GreenNoise);
 				mywave.Optimize(mywave.m_GreenWave, mywave.m_GreenGauPra);
 
-				mywave.calculateDepth(mywave.m_GreenGauPra, mywave.greenDepth);
+				mywave.CalcuDepth(mywave.m_GreenGauPra, mywave.greenDepth);
 				break;
 			default:
 				break;
@@ -382,7 +382,7 @@ void ReadFile::outputData()
 				}
 				iterate << endl;
 
-				mywave.calculateDepth(mywave.m_BlueGauPra, mywave.blueDepth);
+				mywave.CalcuDepth(mywave.m_BlueGauPra, mywave.blueDepth);
 				break;
 			case GREEN:
 				WaveData::ostreamFlag = GREEN;
@@ -421,7 +421,7 @@ void ReadFile::outputData()
 				}
 				iterate << endl;
 
-				mywave.calculateDepth(mywave.m_GreenGauPra, mywave.greenDepth);
+				mywave.CalcuDepth(mywave.m_GreenGauPra, mywave.greenDepth);
 				break;
 			default:
 				break;
@@ -517,7 +517,7 @@ void ReadFile::readDeep()
 				dw.DeepResolve(dw.m_BlueDeep, dw.m_BlueDeepPra, dw.m_BlueDeepNoise);
 				dw.DeepOptimize(dw.m_BlueDeep, dw.m_BlueDeepPra);
 
-				dw.calculateDeepDepth(dw.m_BlueDeepPra, dw.blueDeepDepth);
+				dw.CalcuDeepDepth(dw.m_BlueDeepPra, dw.blueDeepDepth);
 				break;
 			case GREEN:
 				DeepWave::ostreamFlag = GREEN;
@@ -526,7 +526,109 @@ void ReadFile::readDeep()
 				dw.DeepResolve(dw.m_GreenDeep, dw.m_GreenDeepPra, dw.m_GreenDeepNoise);
 				dw.DeepOptimize(dw.m_GreenDeep, dw.m_GreenDeepPra);
 
-				dw.calculateDeepDepth(dw.m_GreenDeepPra, dw.greenDeepDepth);
+				dw.CalcuDeepDepth(dw.m_GreenDeepPra, dw.greenDeepDepth);
+				break;
+			default:
+				break;
+			}
+
+			//输出信息到文件
+			output_stream << dw;
+
+			//文件指针偏移一帧完整数据的字节数：2688/8
+			j += 336;
+
+			//打印处理进程情况
+			cout.width(3);
+			cout << int(/*100 * 8 **/ j / (length / 800)) << "%";
+			cout << "\b\b\b\b";
+
+		}
+		else
+		{
+			//可能会多出二段回波数据：uint16_t[CH.nL1] -> 2*n
+			j += 2;
+		}
+
+	} while (!feof(m_filePtr));
+
+	//文件结束退出
+	if (feof(m_filePtr) == 1)
+	{
+		cout << "finished！" << endl;
+	}
+}
+
+
+/*功能：	读取深水数据混合近红外通道处理
+//out:
+*/
+void ReadFile::readDeepByRed()
+{
+	unsigned int j = 0;
+	HS_Lidar hs;
+
+	//把文件的位置指针移到文件尾获取文件长度
+	unsigned int length;
+	fseek(m_filePtr, 0L, SEEK_END);
+	length = ftell(m_filePtr);
+	cout << "ReadDeepByRedProcessing:";
+
+
+	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
+	fstream output_stream;
+	output_stream.open("DeepByRedOut.txt", ios::out);
+
+	int bgflag;
+	float blueStd, greenStd;
+
+
+	//遍历文件获取数据
+	do {
+		_fseeki64(m_filePtr, j * 8, SEEK_SET);
+
+		//寻找帧头
+		uint8_t header[8];
+		memset(header, 0, sizeof(uint8_t) * 8);
+		fread(header, sizeof(uint8_t), 8, m_filePtr);
+		if (isHeaderRight(header))
+		{
+			//处理数据的流程：
+			_fseeki64(m_filePtr, -8, SEEK_CUR);
+			hs.initDeepData(m_filePtr);
+
+			//获取通道的深水段回波数据
+			DeepWave dw;
+			dw.GetDeepData(hs);
+
+			//获取近红外水面点
+			dw.GetRedTime(dw.m_RedDeep, dw.redTime);
+
+			//process
+			blueStd = calculateSigma(dw.m_BlueDeep);
+			greenStd = calculateSigma(dw.m_GreenDeep);
+
+			blueStd >= 1.2*greenStd ? bgflag = BLUE : bgflag = GREEN;//判断阈值
+
+			switch (bgflag)
+			{
+			case BLUE:
+				DeepWave::ostreamFlag = BLUE;
+
+				dw.DeepFilter(dw.m_BlueDeep, dw.m_BlueDeepNoise);
+				dw.DeepResolve(dw.m_BlueDeep, dw.m_BlueDeepPra, dw.m_BlueDeepNoise);
+				dw.DeepOptimize(dw.m_BlueDeep, dw.m_BlueDeepPra);
+
+				dw.CalcuDeepDepthByRed(dw.m_BlueDeepPra, dw.redTime, dw.blueDeepDepth);
+				break;
+			case GREEN:
+				DeepWave::ostreamFlag = GREEN;
+
+				dw.DeepFilter(dw.m_GreenDeep, dw.m_GreenDeepNoise);
+				dw.DeepResolve(dw.m_GreenDeep, dw.m_GreenDeepPra, dw.m_GreenDeepNoise);
+				dw.DeepOptimize(dw.m_GreenDeep, dw.m_GreenDeepPra);
+
+				dw.CalcuDeepDepthByRed(dw.m_GreenDeepPra, dw.redTime, dw.greenDeepDepth);
 				break;
 			default:
 				break;

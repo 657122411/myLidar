@@ -16,6 +16,7 @@ public:
 	void readMix();
 	void outputData();
 	void readDeep();
+	void readDeepByRed();
 private:
 	char *m_filename;
 	FILE *m_filePtr;

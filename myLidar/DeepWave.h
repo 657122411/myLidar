@@ -26,15 +26,19 @@ public:
 	friend ostream &operator<<(ostream &stream, const DeepWave &deepwave);	//自定义输出信息
 	Time m_time;									//UTC时间
 
+	vector<float> m_RedDeep;						//CH1近红外通道深水数据
 	vector<float> m_BlueDeep;						//CH2通道深水数据
 	vector<float> m_GreenDeep;						//CH3通道深水数据
 	float m_BlueDeepNoise;							//CH2通道的随机噪声
 	float m_GreenDeepNoise;							//CH3通道的随机噪声
 	vector<float> m_BlueDeepPra;					//CH2数据峰值点索引
 	vector<float> m_GreenDeepPra;					//CH3数据峰值点索引
-	vector<float>::iterator DeepPraIter;			//峰值点索引迭代器
+
+	int redTime;									//近红外通道的水面点
+	void GetRedTime(vector<float> &srcWave, int &redtime);//获取近红外通道水面点时刻
+	void CalcuDeepDepthByRed(vector<float> &waveParam, int &redtime, float &BorGDepth);	//根据近红外通道水面和蓝绿通道水底计算水深
 
 	float blueDeepDepth;							//CH2通道的计算水深
 	float greenDeepDepth;							//CH3通道的计算水深
-	void calculateDeepDepth(vector<float> &waveParam, float &BorGDepth);	//根据回波数据计算水深
+	void CalcuDeepDepth(vector<float> &waveParam, float &BorGDepth);	//根据回波数据计算水深
 };

@@ -47,5 +47,5 @@ public:
 
 	float blueDepth;								//CH2通道的计算水深
 	float greenDepth;								//CH3通道的计算水深
-	void calculateDepth(vector<GaussParameter> &waveParam,float &BorGDepth);	//根据回波数据计算水深
+	void CalcuDepth(vector<GaussParameter> &waveParam,float &BorGDepth);	//根据回波数据计算水深
 };

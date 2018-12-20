@@ -2,7 +2,7 @@
 #include <numeric>
 #include <algorithm>
 
-#define DeepPulseWidth 4		//定义激光脉冲宽度做剥离阈值参考
+#define DeepPulseWidth 4	//定义激光脉冲宽度做剥离阈值参考
 #define TimeDifference 8	//与UTC的时差
 
 #define BLUE true
@@ -12,8 +12,8 @@
 #define ndeepwater 1.34		//海水水质的折射率
 
 // 回波类型
-#define DEEPSURFACE true		//水表回波（可能包括后向散射）
-#define DEEPBOTTOM false		//水底或水中物质回波
+#define DEEPSURFACE true	//水表回波（可能包括后向散射）
+#define DEEPBOTTOM false	//水底或水中物质回波
 
 bool DeepWave::ostreamFlag = BLUE;
 
@@ -469,8 +469,12 @@ void DeepWave::GetDeepData(HS_Lidar & hs)
 	delete pgt;
 	delete pct;
 
-	//取蓝绿通道深水数据
+	//取近红外、蓝绿通道深水数据
 	vector<int >::iterator it;//声明迭代器
+	for (it = hs.deepData1.begin(); it != hs.deepData1.end(); ++it)
+	{
+		m_RedDeep.push_back((float)*it);
+	}
 	for (it = hs.deepData2.begin(); it != hs.deepData2.end(); ++it) 
 	{
 		m_BlueDeep.push_back((float)*it);
@@ -577,10 +581,41 @@ void DeepWave::DeepOptimize(vector<float> &srcWave, vector<float> &waveParam)
 }
 
 
+/*功能：	获取近红外通道水面点时刻
+//内容：	直接对近红外通道进行峰值检测，取峰值最大最前的时刻
+*/
+void DeepWave::GetRedTime(vector<float>& srcWave, int & redtime)
+{
+	//寻找峰值
+	vector<int>answer = FindLocalMaxima(srcWave, 3, 800, 1, 20);//阈值限制条件！！！
+
+	redtime = *min_element(answer.begin(), answer.end());
+}
+
+
+/*功能：	根据近红外通道水面和蓝绿通道水底计算水深
+//内容：	直接取近红外为水面，蓝绿通道取与近红外相近数据为睡眠，靠后者为水底
+*/
+void DeepWave::CalcuDeepDepthByRed(vector<float>& waveParam, int & redtime, float & BorGDepth)
+{
+	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
+	{
+		BorGDepth = 0;
+	}
+	else
+	{
+		float tbegin = (redtime<*min_element(waveParam.begin(), waveParam.end()))? redtime: *min_element(waveParam.begin(), waveParam.end());
+		float tend = *max_element(waveParam.begin(), waveParam.end());
+
+		BorGDepth = c*(tend - tbegin) / (2 * ndeepwater);
+	}
+}
+
+
 /*功能：	计算水深
 //内容：	提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深
 */
-void DeepWave::calculateDeepDepth(vector<float>& waveParam, float &BorGDepth)
+void DeepWave::CalcuDeepDepth(vector<float>& waveParam, float &BorGDepth)
 {
 	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
 	{

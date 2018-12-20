@@ -17,6 +17,7 @@
 
 bool WaveData::ostreamFlag = BLUE;
 
+
 /*功能：  高斯核生成
 //kernel：存储生成的高斯核
 //size：  核的大小
@@ -724,7 +725,7 @@ void WaveData::Optimize(vector<float> &srcWave, vector<GaussParameter> &wavePara
 /*功能：	计算水深
 //内容：	提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深
 */
-void WaveData::calculateDepth(vector<GaussParameter>& waveParam, float &BorGDepth)
+void WaveData::CalcuDepth(vector<GaussParameter>& waveParam, float &BorGDepth)
 {
 	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
 	{
