@@ -18,6 +18,7 @@ public:
 	void outputData();
 	void readDeep();
 	void readDeepByRed();
+	void readDeepOutLas();
 private:
 	char *m_filename;
 	FILE *m_filePtr;
