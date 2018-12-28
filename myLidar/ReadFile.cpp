@@ -686,7 +686,6 @@ void ReadFile::readDeepOutLas()
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
 	fstream las_stream;
 	las_stream.open("las2txt.txt", ios::out);
-	las_stream << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(8);
 
 	int bgflag;
 	float blueStd, greenStd;
@@ -724,7 +723,8 @@ void ReadFile::readDeepOutLas()
 			//当经纬度发生变化时计算该经纬度的平均有效水深进行输出
 			if (hs.header.dX != tmpX || hs.header.dY != tmpY)
 			{
-				las_stream << tmpX << " " << tmpY << " " << avedepth / count << endl;
+				//控制输出精度
+				las_stream << setprecision(17) << tmpX << " " << tmpY << " " << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(3) << avedepth / count << endl;
 			}
 
 			//获取近红外水面点
