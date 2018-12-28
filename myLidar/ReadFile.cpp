@@ -57,13 +57,13 @@ bool ReadFile::setFilename(char filename[100])
 */
 void ReadFile::readBlueAll()
 {
-	unsigned int j = 0;
+	unsigned _int64 j = 0;
 	HS_Lidar hs;
 	
 	//把文件的位置指针移到文件尾获取文件长度
-	unsigned int length;
-	fseek(m_filePtr, 0L, SEEK_END);
-	length = ftell(m_filePtr);
+	unsigned _int64 length;
+	_fseeki64(m_filePtr, 0L, SEEK_END);
+	length = _ftelli64(m_filePtr);
 	cout << "BLueChannelProcessing:";
 	
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
@@ -120,7 +120,7 @@ void ReadFile::readBlueAll()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		cout << "finished！" << endl;
+		cout << "finished!" << endl;
 	}
 }
 
@@ -130,13 +130,13 @@ void ReadFile::readBlueAll()
 */
 void ReadFile::readGreenAll()
 {
-	unsigned int j = 0;
+	unsigned _int64 j = 0;
 	HS_Lidar hs;
 
 	//把文件的位置指针移到文件尾获取文件长度
-	unsigned int length;
-	fseek(m_filePtr, 0L, SEEK_END);
-	length = ftell(m_filePtr);
+	unsigned _int64 length;
+	_fseeki64(m_filePtr, 0L, SEEK_END);
+	length = _ftelli64(m_filePtr);
 	cout << "GreenChannelProcessing:";
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
@@ -193,7 +193,7 @@ void ReadFile::readGreenAll()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		cout << "finished！" << endl;
+		cout << "finished!" << endl;
 	}
 }
 
@@ -202,13 +202,13 @@ void ReadFile::readGreenAll()
 */
 void ReadFile::readMix()
 {
-	unsigned int j = 0;
+	unsigned _int64 j = 0;
 	HS_Lidar hs;
 
 	//把文件的位置指针移到文件尾获取文件长度
-	unsigned int length;
-	fseek(m_filePtr, 0L, SEEK_END);
-	length = ftell(m_filePtr);
+	unsigned _int64 length;
+	_fseeki64(m_filePtr, 0L, SEEK_END);
+	length = _ftelli64(m_filePtr);
 	cout << "MixChannelProcessing:";
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
@@ -289,7 +289,7 @@ void ReadFile::readMix()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		cout << "finished！" << endl;
+		cout << "finished!" << endl;
 	}
 }
 
@@ -299,13 +299,13 @@ void ReadFile::readMix()
 */
 void ReadFile::outputData()
 {
-	unsigned int j = 0;
+	unsigned _int64 j = 0;
 	HS_Lidar hs;
 
 	//把文件的位置指针移到文件尾获取文件长度
-	unsigned int length;
-	fseek(m_filePtr, 0L, SEEK_END);
-	length = ftell(m_filePtr);
+	unsigned _int64 length;
+	_fseeki64(m_filePtr, 0L, SEEK_END);
+	length = _ftelli64(m_filePtr);
 	cout << "MixChannelProcessing:";
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
@@ -459,7 +459,7 @@ void ReadFile::outputData()
 		filter.close();//滤波数据
 		resolve.close();//初解算数据
 		iterate.close();//迭代数据
-		cout << "finished！" << endl;
+		cout << "finished!" << endl;
 	}
 
 }
@@ -470,13 +470,13 @@ void ReadFile::outputData()
 */
 void ReadFile::readDeep()
 {
-	unsigned int j = 0;
+	unsigned _int64 j = 0;
 	HS_Lidar hs;
 
 	//把文件的位置指针移到文件尾获取文件长度
-	unsigned int length;
-	fseek(m_filePtr, 0L, SEEK_END);
-	length = ftell(m_filePtr);
+	unsigned _int64 length;
+	_fseeki64(m_filePtr, 0L, SEEK_END);
+	length = _ftelli64(m_filePtr);
 	cout << "ReadDeepProcessing:";
 
 
@@ -560,7 +560,7 @@ void ReadFile::readDeep()
 	//文件结束退出
 	if (feof(m_filePtr) == 1)
 	{
-		cout << "finished！" << endl;
+		cout << "finished!" << endl;
 	}
 }
 
@@ -570,13 +570,13 @@ void ReadFile::readDeep()
 */
 void ReadFile::readDeepByRed()
 {
-	unsigned int j = 0;
+	unsigned _int64 j = 0;
 	HS_Lidar hs;
 
 	//把文件的位置指针移到文件尾获取文件长度
-	unsigned int length;
-	fseek(m_filePtr, 0L, SEEK_END);
-	length = ftell(m_filePtr);
+	unsigned _int64 length;
+	_fseeki64(m_filePtr, 0L, SEEK_END);
+	length = _ftelli64(m_filePtr);
 	cout << "ReadDeepByRedProcessing:";
 
 
@@ -663,7 +663,7 @@ void ReadFile::readDeepByRed()
 	//文件结束退出
 	if (feof(m_filePtr) == 1)
 	{
-		cout << "finished！" << endl;
+		cout << "finished!" << endl;
 	}
 }
 
@@ -673,13 +673,13 @@ void ReadFile::readDeepByRed()
 */
 void ReadFile::readDeepOutLas()
 {
-	unsigned int j = 0;
+	unsigned _int64 j = 0;
 	HS_Lidar hs;
 
 	//把文件的位置指针移到文件尾获取文件长度
-	unsigned int length;
-	fseek(m_filePtr, 0L, SEEK_END);
-	length = ftell(m_filePtr);
+	unsigned _int64 length;
+	_fseeki64(m_filePtr, 0L, SEEK_END);
+	length = _ftelli64(m_filePtr);
 	cout << "ReadDeepOutLasProcessing:";
 
 
@@ -799,6 +799,6 @@ void ReadFile::readDeepOutLas()
 	if (feof(m_filePtr) == 1)
 	{
 		las_stream.close();
-		cout << "finished！" << endl;
+		cout << "finished!" << endl;
 	}
 }
