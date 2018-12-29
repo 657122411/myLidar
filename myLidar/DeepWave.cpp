@@ -494,6 +494,43 @@ void DeepWave::GetDeepData(HS_Lidar & hs)
 */
 void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 {
+	//有效数据的截取，新加入极小值间的数据标准差的变化
+	//begin|______k__KK__|end
+	//begin|_____L___KK__|end
+	int k = 60, kk = 50, l = 60;//兴趣区域的区间端点
+
+	//后向前遍历取点
+	for (int i = 60; i < srcWave.size() - 60; i++)
+	{
+		if (srcWave.at(srcWave.size() - (i - 1)) > srcWave.at(srcWave.size() - i) && srcWave.at(srcWave.size() - i) < srcWave.at(srcWave.size() - (i + 1)))
+		{
+			k = i;
+			for (int j = i + 6/*两倍脉冲宽度*/; j < srcWave.size() - 66; j++)
+			{
+				if (srcWave.at(srcWave.size() - (j - 1)) < srcWave.at(srcWave.size() - j) && srcWave.at(srcWave.size() - j) > srcWave.at(srcWave.size() - (j + 1)))
+					l = j;
+				break;
+			}
+			if (l > k)
+			{
+				vector<float> v1(srcWave.end() - kk, srcWave.end());
+				vector<float> v2(srcWave.end() - l, srcWave.end()-kk);
+				kk = k; 
+				float Sv1 = calculateDeepSigma(v1);
+				float Sv2 = calculateDeepSigma(v2);
+				if (Sv2 > 2 * Sv1)//阈值设置
+				{
+					break;
+				}
+					
+			}
+		}
+	}
+
+	//后部冗长数据剔除
+	srcWave.erase(srcWave.end() - kk, srcWave.end());
+
+
 	//高斯滤波去噪
 	vector<float> dstWave;
 	dstWave.assign(srcWave.begin(), srcWave.end());
