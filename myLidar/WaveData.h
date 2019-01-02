@@ -19,7 +19,7 @@ struct GaussParameter
 
 
 //计算数据的标准差
-float calculateSigma(vector<float> resultSet);
+float calculateSigma(const vector<float> &resultSet);
 
 
 //波形数据类
@@ -28,7 +28,7 @@ class WaveData
 public:
 	WaveData();
 	~WaveData();
-	void GetData(HS_Lidar &hs);												//截取兴趣数据
+	void GetData(const HS_Lidar &hs);												//截取兴趣数据
 	void Filter(vector<float> &srcWave,float &noise);						//滤波平滑
 	void Resolve(vector<float> &srcWave,vector<GaussParameter> &waveParam,float &noise);	//分解高斯分量参数
 	void Optimize(vector<float> &srcWave,vector<GaussParameter> &waveParam);//迭代优化（LM）

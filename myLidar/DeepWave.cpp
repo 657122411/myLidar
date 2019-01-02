@@ -2,7 +2,11 @@
 #include <numeric>
 #include <algorithm>
 
-#define DeepPulseWidth 4	//定义激光脉冲宽度做剥离阈值参考
+#define MinPulseIntensity 3	//定义激光脉冲强度宽度做剥离阈值参考
+#define MaxPulseIntensity 800
+#define MinPulseWidth 1
+#define MaxPulseWidth 20
+
 #define TimeDifference 8	//与UTC的时差
 
 #define BLUE true
@@ -218,7 +222,7 @@ void cubicSmooth7(float in[], float out[], int N)
 //stdev：	返回值为标准差
 //*
 */
-float calculateDeepSigma(vector<float> resultSet)
+float calculateDeepSigma(const vector<float> &resultSet)
 {
 	double sum = std::accumulate(std::begin(resultSet), std::end(resultSet), 0.0);
 	double mean = sum / resultSet.size(); //均值  
@@ -597,7 +601,7 @@ void DeepWave::DeepResolve(vector<float> &srcWave, vector<float> &waveParam, flo
 	}
 
 	//寻找峰值
-	vector<int>answer = FindLocalMaxima(data, 3, 800, 1, 20);//阈值限制条件！！！
+	vector<int>answer = FindLocalMaxima(data, MinPulseIntensity, MaxPulseIntensity, MinPulseWidth, MaxPulseWidth);//阈值限制条件！！！
 
 	//保存峰值点索引
 	for (auto ans : answer)

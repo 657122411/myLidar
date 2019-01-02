@@ -41,12 +41,12 @@ bool ReadFile::setFilename(char filename[100])
 	m_filePtr = fopen(m_filename, "rb");
 	if (m_filePtr == NULL)
 	{
-		cout << "file loading failed!" << endl;
+		printf("file loading failed!\n");
 		return false;
 	}
 	else
 	{
-		cout << "file loading successed!" << endl;
+		printf("file loading successed!\n");
 		return true;
 	}
 }
@@ -64,7 +64,7 @@ void ReadFile::readBlueAll()
 	unsigned _int64 length;
 	_fseeki64(m_filePtr, 0L, SEEK_END);
 	length = _ftelli64(m_filePtr);
-	cout << "BLueChannelProcessing:";
+	printf("BLueChannelProcessing:");
 	
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
 	fstream output_stream;
@@ -90,10 +90,10 @@ void ReadFile::readBlueAll()
 			WaveData mywave;
 			mywave.GetData(hs);
 			mywave.Filter(mywave.m_BlueWave, mywave.m_BlueNoise);
-			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra,mywave.m_BlueNoise);
+			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra, mywave.m_BlueNoise);
 			mywave.Optimize(mywave.m_BlueWave, mywave.m_BlueGauPra);
-			
-			mywave.CalcuDepth(mywave.m_BlueGauPra,mywave.blueDepth);
+
+			mywave.CalcuDepth(mywave.m_BlueGauPra, mywave.blueDepth);
 
 			//输出信息到文件
 			output_stream << mywave;
@@ -101,11 +101,9 @@ void ReadFile::readBlueAll()
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
 
-			//打印处理进程情况
-			cout.width(5);//宽度
-			//设置输出精度，保留有效数字
-			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
-			cout << "\b\b\b\b\b\b";
+			//打印处理进程情况设置宽度输出精度
+			printf("%5.2f%%", (float)j / (length / 800));
+			printf("\b\b\b\b\b\b");
 
 		}
 		else
@@ -120,7 +118,7 @@ void ReadFile::readBlueAll()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		cout << "finished!" << endl;
+		printf("finished!\n");
 	}
 }
 
@@ -137,7 +135,7 @@ void ReadFile::readGreenAll()
 	unsigned _int64 length;
 	_fseeki64(m_filePtr, 0L, SEEK_END);
 	length = _ftelli64(m_filePtr);
-	cout << "GreenChannelProcessing:";
+	printf("GreenChannelProcessing:");
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
 	fstream output_stream;
@@ -174,11 +172,9 @@ void ReadFile::readGreenAll()
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
 
-			//打印处理进程情况
-			cout.width(5);//宽度
-			//设置输出精度，保留有效数字
-			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
-			cout << "\b\b\b\b\b\b";
+			//打印处理进程情况设置宽度输出精度
+			printf("%5.2f%%", (float)j / (length / 800));
+			printf("\b\b\b\b\b\b");
 
 		}
 		else
@@ -193,7 +189,7 @@ void ReadFile::readGreenAll()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		cout << "finished!" << endl;
+		printf("finished!\n");
 	}
 }
 
@@ -209,7 +205,7 @@ void ReadFile::readMix()
 	unsigned _int64 length;
 	_fseeki64(m_filePtr, 0L, SEEK_END);
 	length = _ftelli64(m_filePtr);
-	cout << "MixChannelProcessing:";
+	printf("MixChannelProcessing:");
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
 	fstream output_stream;
@@ -270,11 +266,9 @@ void ReadFile::readMix()
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
 
-			//打印处理进程情况
-			cout.width(5);//宽度
-			//设置输出精度，保留有效数字
-			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
-			cout << "\b\b\b\b\b\b";
+			//打印处理进程情况设置宽度输出精度
+			printf("%5.2f%%", (float)j / (length / 800));
+			printf("\b\b\b\b\b\b");
 
 		}
 		else
@@ -289,7 +283,7 @@ void ReadFile::readMix()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		cout << "finished!" << endl;
+		printf("finished!\n");
 	}
 }
 
@@ -306,7 +300,7 @@ void ReadFile::outputData()
 	unsigned _int64 length;
 	_fseeki64(m_filePtr, 0L, SEEK_END);
 	length = _ftelli64(m_filePtr);
-	cout << "MixChannelProcessing:";
+	printf("MixChannelProcessing:");
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
 	fstream output_stream;
@@ -436,11 +430,9 @@ void ReadFile::outputData()
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
 
-			//打印处理进程情况
-			cout.width(5);//宽度
-			//设置输出精度，保留有效数字
-			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
-			cout << "\b\b\b\b\b\b";
+			//打印处理进程情况设置宽度输出精度
+			printf("%5.2f%%", (float)j / (length / 800));
+			printf("\b\b\b\b\b\b");
 
 		}
 		else
@@ -459,7 +451,7 @@ void ReadFile::outputData()
 		filter.close();//滤波数据
 		resolve.close();//初解算数据
 		iterate.close();//迭代数据
-		cout << "finished!" << endl;
+		printf("finished!\n");
 	}
 
 }
@@ -477,7 +469,7 @@ void ReadFile::readDeep()
 	unsigned _int64 length;
 	_fseeki64(m_filePtr, 0L, SEEK_END);
 	length = _ftelli64(m_filePtr);
-	cout << "ReadDeepProcessing:";
+	printf("ReadDeepProcessing:");
 
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
@@ -542,11 +534,9 @@ void ReadFile::readDeep()
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
 
-			//打印处理进程情况
-			cout.width(5);//宽度
-		    //设置输出精度，保留有效数字
-			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
-			cout << "\b\b\b\b\b\b";
+			//打印处理进程情况设置宽度输出精度
+			printf("%5.2f%%", (float)j / (length / 800));
+			printf("\b\b\b\b\b\b");
 
 		}
 		else
@@ -560,7 +550,7 @@ void ReadFile::readDeep()
 	//文件结束退出
 	if (feof(m_filePtr) == 1)
 	{
-		cout << "finished!" << endl;
+		printf("finished!\n");
 	}
 }
 
@@ -577,7 +567,7 @@ void ReadFile::readDeepByRed()
 	unsigned _int64 length;
 	_fseeki64(m_filePtr, 0L, SEEK_END);
 	length = _ftelli64(m_filePtr);
-	cout << "ReadDeepByRedProcessing:";
+	printf("ReadDeepByRedProcessing:");
 
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
@@ -645,11 +635,9 @@ void ReadFile::readDeepByRed()
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
 
-			//打印处理进程情况
-			cout.width(5);//宽度
-			//设置输出精度，保留有效数字
-			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
-			cout << "\b\b\b\b\b\b";
+			//打印处理进程情况设置宽度输出精度
+			printf("%5.2f%%", (float)j / (length / 800));
+			printf("\b\b\b\b\b\b");
 
 		}
 		else
@@ -663,7 +651,7 @@ void ReadFile::readDeepByRed()
 	//文件结束退出
 	if (feof(m_filePtr) == 1)
 	{
-		cout << "finished!" << endl;
+		printf("finished!\n");
 	}
 }
 
@@ -680,7 +668,7 @@ void ReadFile::readDeepOutLas()
 	unsigned _int64 length;
 	_fseeki64(m_filePtr, 0L, SEEK_END);
 	length = _ftelli64(m_filePtr);
-	cout << "ReadDeepOutLasProcessing:";
+	printf("ReadDeepOutLasProcessing:");
 
 
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
@@ -780,11 +768,9 @@ void ReadFile::readDeepOutLas()
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
 
-			//打印处理进程情况
-			cout.width(5);//宽度
-			//设置输出精度，保留有效数字
-			cout << fixed << setprecision(2) << /*100 * 8 **/ (float)j / (length / 800) << "%";
-			cout << "\b\b\b\b\b\b";
+			//打印处理进程情况设置宽度输出精度
+			printf("%5.2f%%", (float)j / (length / 800));
+			printf("\b\b\b\b\b\b");
 
 		}
 		else
@@ -799,6 +785,6 @@ void ReadFile::readDeepOutLas()
 	if (feof(m_filePtr) == 1)
 	{
 		las_stream.close();
-		cout << "finished!" << endl;
+		printf("finished!\n");
 	}
 }

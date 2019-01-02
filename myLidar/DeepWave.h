@@ -9,7 +9,7 @@ using namespace std;
 
 
 //计算数据的标准差
-float calculateDeepSigma(vector<float> resultSet);
+float calculateDeepSigma(const vector<float> &resultSet);
 
 //深水波形数据类
 class DeepWave

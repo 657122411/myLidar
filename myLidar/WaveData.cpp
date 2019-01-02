@@ -70,7 +70,7 @@ void gaussian(float src[], float dst[])
 //stdev：	返回值为标准差
 //*
 */
-float calculateSigma(vector<float> resultSet)
+float calculateSigma(const vector<float> &resultSet)
 {
 	double sum = std::accumulate(std::begin(resultSet), std::end(resultSet), 0.0);
 	double mean = sum / resultSet.size(); //均值  
@@ -257,7 +257,7 @@ WaveData::~WaveData()
 /*功能：	提取原始数据中的兴趣区域数据
 //*&hs:	原始Lidar数据
 */
-void WaveData::GetData(HS_Lidar &hs)
+void WaveData::GetData(const HS_Lidar &hs)
 {
 	//GPS->UTC->BeiJing
 	PGPSTIME pgt = new GPSTIME;
