@@ -1,3 +1,8 @@
+/*************************************************
+Author:陶剑浩
+Date:2019-01-02
+Description:浅水测深数据水深解算
+**************************************************/
 #include "WaveData.h"
 #include <numeric>
 
@@ -18,11 +23,12 @@
 bool WaveData::ostreamFlag = BLUE;
 
 
-/*功能：  高斯核生成
-//kernel：存储生成的高斯核
-//size：  核的大小
-//sigma： 正态分布标准差
-*/
+/*************************************************
+Function:       高斯核函数生成
+Description:    高斯滤波器的核函数
+Input:          //kernel：存储生成的高斯核//size：核的大小//sigma：正态分布标准差
+Output:        
+*************************************************/
 void gau_kernel(float kernel[], int size, float sigma)
 {
 	if (size <= 0 || sigma == 0)
@@ -46,12 +52,12 @@ void gau_kernel(float kernel[], int size, float sigma)
 }
 
 
-/*功能:	 高斯模糊
-//src：  输入原图
-//dst：  模糊图像
-//size： 核的大小
-//sigma：正态分布标准差
-*/
+/*************************************************
+Function:       高斯滤波
+Description:    先获取高斯滤波核函数
+Input:          输入数据
+Output:			滤波后数据
+*************************************************/
 void gaussian(float src[], float dst[])
 {
 	float kernel[5];
@@ -64,12 +70,12 @@ void gaussian(float src[], float dst[])
 }
 
 
-/*功能：	计算数据的标准差
-//*:
-//resultSet：传入的数据数组
-//stdev：	返回值为标准差
-//*
-*/
+/*************************************************
+Function:       计算数据的标准差
+Description:    标准差作为阈值参考值
+Input:          传入的数据数组
+Output:         返回值为标准差
+*************************************************/
 float calculateSigma(const vector<float> &resultSet)
 {
 	double sum = std::accumulate(std::begin(resultSet), std::end(resultSet), 0.0);
@@ -254,9 +260,12 @@ WaveData::~WaveData()
 }
 
 
-/*功能：	提取原始数据中的兴趣区域数据
-//*&hs:	原始Lidar数据
-*/
+/*************************************************
+Function:       提取原始数据中的兴趣区域数据
+Description:    取时间与蓝绿通道数据
+Input:          &hs:原始Lidar数据
+Output:         
+*************************************************/
 void WaveData::GetData(const HS_Lidar &hs)
 {
 	//GPS->UTC->BeiJing
@@ -281,10 +290,12 @@ void WaveData::GetData(const HS_Lidar &hs)
 }
 
 
-/*功能：		预处理数据：截取有效部分并进行去噪滤波操作
-//&srcWave:	通道原始数据
-//&noise：	记录的噪声所属波段
-*/
+/*************************************************
+Function:       预处理数据
+Description:    截取有效部分并进行去噪滤波操作
+Input:          通道原始数据，记录的噪声所属波段
+Output:
+*************************************************/
 void WaveData::Filter(vector<float> &srcWave, float &noise)
 {
 	/*
@@ -365,7 +376,7 @@ void WaveData::Filter(vector<float> &srcWave, float &noise)
 
 	noise = 0;
 	//计算随机噪声:两次滤波前后的波形数据的峰值差的均方差（标准差）
-	for (int i = 0; i < srcWave.size(); i++)
+	for (unsigned int i = 0; i < srcWave.size(); i++)
 	{
 		noise += (srcWave.at(i) - dstWave.at(i)) * (srcWave.at(i) - dstWave.at(i));
 	}
@@ -375,10 +386,12 @@ void WaveData::Filter(vector<float> &srcWave, float &noise)
 }
 
 
-/*功能：			高斯分量分解函数
-//&srcWave:		通道原始数据
-//&waveParam：	该通道的高斯分量参数
-*/
+/*************************************************
+Function:       高斯分量分解函数
+Description:    自顶向下迭代剥离高斯分量
+Input:          通道原始数据，该通道的高斯分量参数，该通道的噪声
+Output:
+*************************************************/
 void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam, float &noise)
 {
 	//拷贝原始数据
@@ -528,9 +541,9 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 
 
 	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
-	for (int i = 0; i<waveParam.size() - 1; i++)
+	for (unsigned int i = 0; i<waveParam.size() - 1; i++)
 	{
-		for (int j = i + 1; j < waveParam.size(); j++)
+		for (unsigned int j = i + 1; j < waveParam.size(); j++)
 		{
 			if (abs(waveParam.at(i).b - waveParam.at(j).b) < PulseWidth)//Key
 			{
@@ -561,11 +574,12 @@ void WaveData::Resolve(vector<float> &srcWave, vector<GaussParameter> &waveParam
 }
 
 
-/*功能：			LM算法迭代优化
-//&srcWave:		通道原始数据
-//&waveParam：	该通道的高斯分量参数
-//LM算法参考：	https://blog.csdn.net/shajun0153/article/details/75073137
-*/
+/*************************************************
+Function:       LM算法迭代优化高斯分量分解函数
+Description:    LM算法参考：https://blog.csdn.net/shajun0153/article/details/75073137
+Input:          通道原始数据，该通道的高斯分量参数
+Output:
+*************************************************/
 void WaveData::Optimize(vector<float> &srcWave, vector<GaussParameter> &waveParam)
 {
 	//解算初值为双峰
@@ -722,9 +736,12 @@ void WaveData::Optimize(vector<float> &srcWave, vector<GaussParameter> &wavePara
 }
 
 
-/*功能：	计算水深
-//内容：	提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深
-*/
+/*************************************************
+Function:		计算水深
+Description:    提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深
+Input:          通道原始数据，该通道的水深
+Output:
+*************************************************/
 void WaveData::CalcuDepth(vector<GaussParameter>& waveParam, float &BorGDepth)
 {
 	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
@@ -754,9 +771,12 @@ void WaveData::CalcuDepth(vector<GaussParameter>& waveParam, float &BorGDepth)
 }
 
 
-/*功能：	自定义需要输出的信息
-//内容：	年 月 日 时 分 秒
-*/
+/*************************************************
+Function:		自定义需要输出的信息计算水深
+Description:    内容：	年 月 日 时 分 秒
+Input:          
+Output:
+*************************************************/
 ostream &operator<<(ostream & stream, const WaveData & wavedata)
 {
 	stream << wavedata.m_time.year << " "

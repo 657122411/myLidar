@@ -2,7 +2,7 @@
 #define TIMECONVERT_H
 
 //UTC时间结构体
-typedef struct Time
+struct Time
 {
 	int year;
 	int month;

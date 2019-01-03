@@ -1,3 +1,8 @@
+/*************************************************
+Author:陶剑浩
+Date:2019-01-02
+Description:测深数据文件操作类
+**************************************************/
 #include "ReadFile.h"
 
 #define BLUE true
@@ -31,30 +36,35 @@ ReadFile::~ReadFile()
 }
 
 
-/*功能：	设置读取文件的指针
-//in:	读取文件的绝对路径
-//out:	将该路径赋给文件指针
-*/
+/*************************************************
+Function:       设置读取文件的指针
+Description:    
+Input:          读取文件的绝对路径
+Output:			将该路径赋给文件指针
+*************************************************/
 bool ReadFile::setFilename(char filename[100])
 {
 	m_filename = filename;
 	m_filePtr = fopen(m_filename, "rb");
 	if (m_filePtr == NULL)
 	{
-		printf("file loading failed!\n");
+		printf("\nFile load failed!\n");
 		return false;
 	}
 	else
 	{
-		printf("file loading successed!\n");
+		printf("\nFile loaded successfully!\n");
 		return true;
 	}
 }
 
 
-/*功能：	处理全数据蓝色通道
-//out:	读取通道数据滤波去噪分解优化输出
-*/
+/*************************************************
+Function:       处理全数据蓝色通道
+Description:	读取通道数据滤波去噪分解优化输出
+Input:          
+Output:			CH2水深解算结果
+*************************************************/
 void ReadFile::readBlueAll()
 {
 	unsigned _int64 j = 0;
@@ -118,14 +128,17 @@ void ReadFile::readBlueAll()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		printf("finished!\n");
+		printf("Finished!\n");
 	}
 }
 
 
-/*功能：	处理全数据绿色通道
-//out:	读取通道数据滤波去噪分解优化输出
-*/
+/*************************************************
+Function:       处理全数据绿色通道
+Description:	读取通道数据滤波去噪分解优化输出
+Input:
+Output:			CH3水深解算结果
+*************************************************/
 void ReadFile::readGreenAll()
 {
 	unsigned _int64 j = 0;
@@ -189,13 +202,17 @@ void ReadFile::readGreenAll()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		printf("finished!\n");
+		printf("Finished!\n");
 	}
 }
 
-/*功能：	混合通道处理，选择有效通道
-//out:	读取通道数据，根据两通道的标准差大小决定选择相应的通道数据做水深解算
-*/
+
+/*************************************************
+Function:       全数据混合通道处理
+Description:	读取通道数据，根据两通道的标准差大小决定选择相应的通道数据做水深解算
+Input:
+Output:			CH2,CH3通道有效数据水深解算结果
+*************************************************/
 void ReadFile::readMix()
 {
 	unsigned _int64 j = 0;
@@ -283,14 +300,17 @@ void ReadFile::readMix()
 	if (feof(m_filePtr) == 1)
 	{
 		output_stream.close();
-		printf("finished!\n");
+		printf("Finished!\n");
 	}
 }
 
 
-/*功能：	输出原始数据，滤波后数据，初始解数据，迭代后数据
-//out:	4files
-*/
+/*************************************************
+Function:       全数据混合通道处理并步骤输出
+Description:	输出原始数据，滤波后数据，初始解数据，迭代后数据，水深解算数据
+Input:
+Output:			CH2,CH3通道有效数据水深解算各步骤结果
+*************************************************/
 void ReadFile::outputData()
 {
 	unsigned _int64 j = 0;
@@ -451,15 +471,18 @@ void ReadFile::outputData()
 		filter.close();//滤波数据
 		resolve.close();//初解算数据
 		iterate.close();//迭代数据
-		printf("finished!\n");
+		printf("Finished!\n");
 	}
 
 }
 
 
-/*功能：	读取深水数据
-//out:	
-*/
+/*************************************************
+Function:       深水数据CH2CH3通道混合处理
+Description:	读取通道数据，根据两通道的标准差大小决定选择相应的通道数据做水深解算
+Input:
+Output:			CH2,CH3通道有效数据水深解算结果
+*************************************************/
 void ReadFile::readDeep()
 {
 	unsigned _int64 j = 0;
@@ -550,14 +573,17 @@ void ReadFile::readDeep()
 	//文件结束退出
 	if (feof(m_filePtr) == 1)
 	{
-		printf("finished!\n");
+		printf("Finished!\n");
 	}
 }
 
 
-/*功能：	读取深水数据混合近红外通道处理
-//out:
-*/
+/*************************************************
+Function:       深水数据CH1，CH2CH3通道混合处理
+Description:	近红外通道确定水面，蓝绿通道的标准差大小决定选择相应的通道数据做水深解算
+Input:
+Output:			CH1,CH2orCH3通道有效数据水深解算结果
+*************************************************/
 void ReadFile::readDeepByRed()
 {
 	unsigned _int64 j = 0;
@@ -651,14 +677,17 @@ void ReadFile::readDeepByRed()
 	//文件结束退出
 	if (feof(m_filePtr) == 1)
 	{
-		printf("finished!\n");
+		printf("Finished!\n");
 	}
 }
 
 
-/*功能：	
-//out:
-*/
+/*************************************************
+Function:       深水数据CH1，CH2CH3通道混合处理
+Description:	近红外通道确定水面，蓝绿通道的标准差大小决定选择相应的通道数据做水深解算
+Input:
+Output:			输出点云格式X,Y,Z
+*************************************************/
 void ReadFile::readDeepOutLas()
 {
 	unsigned _int64 j = 0;
@@ -785,6 +814,6 @@ void ReadFile::readDeepOutLas()
 	if (feof(m_filePtr) == 1)
 	{
 		las_stream.close();
-		printf("finished!\n");
+		printf("Finished!\n");
 	}
 }

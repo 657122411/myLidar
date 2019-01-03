@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "stdio.h"
 #include "ReadFile.h"
 using namespace std;
 
@@ -10,15 +11,25 @@ int main()
 	int flag = 1;
 	while (flag)
 	{
-		cout << "file address:"<<endl;
+		printf("Enter the absolute path to the file to be processed:\n");
 		char name[100];
-		cin >> name;
+		scanf("%s", name);
 		ReadFile myfile;
 		bool ret = myfile.setFilename(name);
 		if (ret)
 		{
-			cout << "Channel?(0:Blue/1:Green/2:All/3:Mix/4:OutputData/5:ReadDeep/6:ReadDeepByRed/7:ReadDeepOutLas):" << endl;
-			cin >> flag;
+			printf("\nSelect the channel to be processed?\n");
+			printf("===================================\n");
+			printf("0:Blue\n");
+			printf("1:Green\n");
+			printf("2:All\n");
+			printf("3:Mix\n");
+			printf("4:OutputData\n");
+			printf("5:ReadDeep\n");
+			printf("6:ReadDeepByRed\n");
+			printf("7:ReadDeepOutLas\n");
+			printf("===================================\n\n");
+			scanf("%d", &flag);
 			switch (flag)
 			{
 			case 0: {
@@ -59,8 +70,8 @@ int main()
 		else
 			continue;
 
-		cout << "continue?(1:Y/0:N):" << endl;
-		cin >> flag;
+		printf("\nContinue?(1:Y/0:N):\n\n");
+		scanf("%d", &flag);
 	}
 	
 	return 0;

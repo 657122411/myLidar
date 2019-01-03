@@ -1,3 +1,8 @@
+/*************************************************
+Author:陶剑浩
+Date:2019-01-02
+Description:深水测深数据水深解算
+**************************************************/
 #include "DeepWave.h"
 #include <numeric>
 #include <algorithm>
@@ -151,9 +156,7 @@ void quadraticSmooth7(float in[], float out[], int N)
 }
 
 
-/*
-* 五点三次平滑
-*/
+//五点三次平滑
 void cubicSmooth5(float in[], float out[], int N)
 {
 
@@ -179,9 +182,7 @@ void cubicSmooth5(float in[], float out[], int N)
 }
 
 
-/*
-* 七点三次平滑
-*/
+//七点三次平滑
 void cubicSmooth7(float in[], float out[], int N)
 {
 	int i;
@@ -216,12 +217,12 @@ void cubicSmooth7(float in[], float out[], int N)
 }
 
 
-/*功能：	计算数据的标准差
-//*:
-//resultSet：传入的数据数组
-//stdev：	返回值为标准差
-//*
-*/
+/*************************************************
+Function:       计算数据的标准差
+Description:    标准差作为阈值参考值
+Input:          传入的数据数组
+Output:         返回值为标准差
+*************************************************/
 float calculateDeepSigma(const vector<float> &resultSet)
 {
 	double sum = std::accumulate(std::begin(resultSet), std::end(resultSet), 0.0);
@@ -239,7 +240,12 @@ float calculateDeepSigma(const vector<float> &resultSet)
 }
 
 
-//峰值检测算法 https://www.mathworks.com/help/signal/ref/findpeaks.html
+/*************************************************
+Function:       峰值检测算法
+Description:    https://www.mathworks.com/help/signal/ref/findpeaks.html
+Input:          数据数组，最小最大突起，最小最大峰宽
+Output:         峰值点索引位置向量集合
+*************************************************/
 vector<int> FindLocalMaxima(vector<float> dataVector, int minProminence, int maxProminence, int minWidth, int maxWidth)
 {
 	int dataVectorSize = dataVector.size();
@@ -377,7 +383,7 @@ vector<int> FindLocalMaxima(vector<float> dataVector, int minProminence, int max
 		j = 1;
 		while (((localMaximaIndex[i] + j)<dataVectorSize) && (dataVector[localMaximaIndex[i] + j] - minimumValue>(prominence) / 2)) { j++; }
 		rightWidth = j;
-		int width = leftWidth + rightWidth;
+		width = leftWidth + rightWidth;
 
 		/********************* IS THE PEAK IN RANGE? ***************************/
 		if ((localMaximaValue[i] - minimumValue >= minProminence) && (localMaximaValue[i] - minimumValue <= maxProminence) && (width >= minWidth) && (width <= maxWidth))
@@ -391,13 +397,12 @@ vector<int> FindLocalMaxima(vector<float> dataVector, int minProminence, int max
 }
 
 
-/*功能：	假设两组高斯函数模型
-//*p:	代求参数
-//*x：  原始数据（测量值）
-//m：	参数维度
-//n：	测量值维度
-//*data:？
-*/
+/*************************************************
+Function:       假设函数
+Description:    假设两组高斯函数模型
+Input:          *p:代求参数 *x：原始数据（测量值）m：参数维度n：测量值维度 *data:？
+Output:         
+*************************************************/
 void deep_expfun2(double *p, double *x, int m, int n, void *data)
 {
 	register int i;
@@ -410,13 +415,12 @@ void deep_expfun2(double *p, double *x, int m, int n, void *data)
 }
 
 
-/*功能：	两组高斯函数模型的雅可比矩阵
-//*p:	代求参数
-//jac： 雅可比矩阵参数
-//m：	参数维度
-//n：	测量值维度
-//*data:？
-*/
+/*************************************************
+Function:       雅可比矩阵
+Description:    两组高斯函数模型
+Input:          *p:代求参数 jac： 雅可比矩阵参数 m：参数维度n：测量值维度 *data:？
+Output:
+*************************************************/
 void deep_jacexpfun2(double *p, double *jac, int m, int n, void *data)
 {
 	register int i, j;
@@ -434,9 +438,8 @@ void deep_jacexpfun2(double *p, double *jac, int m, int n, void *data)
 }
 
 
-/*
-//功能：构造函数初始化数据
-*/
+
+//构造函数初始化数据
 DeepWave::DeepWave()
 {
 	m_time = { 0,0,0,0,0,0 };
@@ -453,9 +456,12 @@ DeepWave::~DeepWave()
 }
 
 
-/*功能：		获取原始数据中深浅水通道的二段回波数据
-//&hs:		通道原始数据
-*/
+/*************************************************
+Function:       获取原始数据中深浅水通道的二段回波数据
+Description:    
+Input:          通道原始数据=
+Output:         
+*************************************************/
 void DeepWave::GetDeepData(HS_Lidar & hs)
 {
 	//GPS->UTC->BeiJing
@@ -491,11 +497,12 @@ void DeepWave::GetDeepData(HS_Lidar & hs)
 }
 
 
-/*功能：		预处理数据：截取有效部分并进行去噪滤波操作
-//			深水采用SG滤波器 https://blog.csdn.net/liyuanbhu/article/details/11119081
-//&srcWave:	通道原始数据
-//&noise：	记录的噪声所属波段
-*/
+/*************************************************
+Function:       预处理数据
+Description:    截取有效部分并进行去噪滤波操作深水采用SG滤波器 https://blog.csdn.net/liyuanbhu/article/details/11119081
+Input:          通道原始数据
+Output:         记录的噪声所属波段
+*************************************************/
 void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 {
 	//有效数据的截取，新加入极小值间的数据标准差的变化
@@ -504,12 +511,12 @@ void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 	int k = 60, kk = 50, l = 60;//兴趣区域的区间端点
 
 	//后向前遍历取点
-	for (int i = 60; i < srcWave.size() - 60; i++)
+	for (unsigned int i = 60; i < srcWave.size() - 60; i++)
 	{
 		if (srcWave.at(srcWave.size() - (i - 1)) > srcWave.at(srcWave.size() - i) && srcWave.at(srcWave.size() - i) < srcWave.at(srcWave.size() - (i + 1)))
 		{
 			k = i;
-			for (int j = i + 6/*两倍脉冲宽度*/; j < srcWave.size() - 66; j++)
+			for (unsigned int j = i + 6/*两倍脉冲宽度*/; j < srcWave.size() - 66; j++)
 			{
 				if (srcWave.at(srcWave.size() - (j - 1)) < srcWave.at(srcWave.size() - j) && srcWave.at(srcWave.size() - j) > srcWave.at(srcWave.size() - (j + 1)))
 					l = j;
@@ -569,7 +576,7 @@ void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 
 	noise = 0;
 	//计算随机噪声:两次滤波前后的波形数据的峰值差的均方差（标准差）
-	for (int i = 0; i < srcWave.size(); i++)
+	for (unsigned int i = 0; i < srcWave.size(); i++)
 	{
 		noise += (srcWave.at(i) - dstWave.at(i)) * (srcWave.at(i) - dstWave.at(i));
 	}
@@ -579,11 +586,12 @@ void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 }
 
 
-/*功能：			峰值检测解算函数
-//&srcWave:		通道原始数据
-//&waveParam：	该通道的峰值索引
-//&noise：		该通道的噪声
-*/
+/*************************************************
+Function:       峰值检测解算函数
+Description:    标准差作为阈值参考值
+Input:          通道原始数据
+Output:         该通道的峰值索引
+*************************************************/
 void DeepWave::DeepResolve(vector<float> &srcWave, vector<float> &waveParam, float &noise)
 {
 	//拷贝原始数据
@@ -623,9 +631,12 @@ void DeepWave::DeepOptimize(vector<float> &srcWave, vector<float> &waveParam)
 }
 
 
-/*功能：	获取近红外通道水面点时刻
-//内容：	直接对近红外通道进行峰值检测，取峰值最大最前的时刻
-*/
+/*************************************************
+Function:       获取近红外通道水面点时刻
+Description:    直接对近红外通道进行峰值检测，取峰值最大最前的时刻标准差作为阈值参考值
+Input:          
+Output:         
+*************************************************/
 void DeepWave::GetRedTime(vector<float>& srcWave, int & redtime)
 {
 	//寻找峰值
@@ -635,9 +646,12 @@ void DeepWave::GetRedTime(vector<float>& srcWave, int & redtime)
 }
 
 
-/*功能：	根据近红外通道水面和蓝绿通道水底计算水深
-//内容：	直接取近红外为水面，蓝绿通道取与近红外相近数据为睡眠，靠后者为水底
-*/
+/*************************************************
+Function:       根据近红外通道水面和蓝绿通道水底计算水深
+Description:    直接取近红外为水面，蓝绿通道取与近红外相近数据为睡眠，靠后者为水底
+Input:          
+Output:         
+*************************************************/
 void DeepWave::CalcuDeepDepthByRed(vector<float>& waveParam, int & redtime, float & BorGDepth)
 {
 	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
@@ -654,9 +668,12 @@ void DeepWave::CalcuDeepDepthByRed(vector<float>& waveParam, int & redtime, floa
 }
 
 
-/*功能：	计算水深
-//内容：	提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深
-*/
+/*************************************************
+Function:       计算水深
+Description:    提取波峰数目小于两个的直接剔除，否则取第一个（即能量最大值）为水面回波，脉冲时间最晚的为水底回波，计算水深标准差作为阈值参考值
+Input:          
+Output:         
+*************************************************/
 void DeepWave::CalcuDeepDepth(vector<float>& waveParam, float &BorGDepth)
 {
 	if ((waveParam.size() <= 1) || (waveParam.size() >= 5))
@@ -673,9 +690,12 @@ void DeepWave::CalcuDeepDepth(vector<float>& waveParam, float &BorGDepth)
 }
 
 
-/*功能：	自定义需要输出的信息
-//内容：	年 月 日 时 分 秒
-*/
+/*************************************************
+Function:       自定义需要输出的信息
+Description:    内容：	年 月 日 时 分 秒
+Input:          
+Output:         
+*************************************************/
 ostream &operator<<(ostream & stream, const DeepWave & wavedata)
 {
 	stream << wavedata.m_time.year << " "
