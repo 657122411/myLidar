@@ -9,6 +9,19 @@ Description:测深数据文件操作类
 #define GREEN false
 
 
+//判断两浮点数是否相等(经纬度变化小于绝对误差)
+bool isEqual(const double a, const double b) 
+{
+	const double eps_0 = 1.0e-6;
+	bool isEqualFlag = false;
+	if (fabs(a - b) <= eps_0) {
+		isEqualFlag = true;
+	}
+
+	return isEqualFlag;
+}
+
+
 //判断帧头是否正确
 bool isHeaderRight(uint8_t header[8])
 {
@@ -710,6 +723,8 @@ void ReadFile::readDeepOutLas()
 	//有效水深的计数器，平均水深
 	int count = 0;
 	float avedepth = 0;
+	double tmpX = 0.0;
+	double tmpY = 0.0;
 
 	//遍历文件获取数据
 	do {
@@ -720,12 +735,6 @@ void ReadFile::readDeepOutLas()
 		memset(header, 0, sizeof(uint8_t) * 8);
 		fread(header, sizeof(uint8_t), 8, m_filePtr);
 
-		//初始记录位置经纬度
-		_fseeki64(m_filePtr, -8, SEEK_CUR);
-		hs.initDeepData(m_filePtr);
-		double tmpX = hs.header.dX;
-		double tmpY = hs.header.dY;
-		_fseeki64(m_filePtr, +8, SEEK_CUR);
 
 		if (isHeaderRight(header))
 		{
@@ -738,10 +747,13 @@ void ReadFile::readDeepOutLas()
 			dw.GetDeepData(hs);
 
 			//当经纬度发生变化时计算该经纬度的平均有效水深进行输出
-			if (hs.header.dX != tmpX || hs.header.dY != tmpY)
+			if ((!isEqual(hs.header.dX,tmpX) || !isEqual(hs.header.dY, tmpY))&&(count>0))
 			{
+				tmpX = hs.header.dX;
+				tmpY = hs.header.dY;
 				//控制输出精度
-				las_stream << setprecision(17) << tmpX << " " << tmpY << " " << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(3) << avedepth / count << endl;
+				las_stream << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(6) << tmpX << " " << tmpY << " " << setprecision(3) << avedepth / count << endl;
+				
 			}
 
 			//获取近红外水面点
