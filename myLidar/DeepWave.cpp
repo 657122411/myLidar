@@ -459,7 +459,7 @@ DeepWave::~DeepWave()
 /*************************************************
 Function:       获取原始数据中深浅水通道的二段回波数据
 Description:    
-Input:          通道原始数据=
+Input:          通道原始数据
 Output:         
 *************************************************/
 void DeepWave::GetDeepData(HS_Lidar & hs)
@@ -565,13 +565,13 @@ void DeepWave::DeepFilter(vector<float> &srcWave, float &noise)
 
 
 	//释放内存
-	delete buffer; 
+	delete []buffer; 
 	buffer = nullptr;
-	delete buffer1; 
+	delete []buffer1; 
 	buffer1 = nullptr;
-	delete buffer2; 
+	delete []buffer2; 
 	buffer2 = nullptr;
-	delete buffer3; 
+	delete []buffer3; 
 	buffer3 = nullptr;
 
 	noise = 0;
