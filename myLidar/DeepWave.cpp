@@ -24,6 +24,8 @@ Description:深水测深数据水深解算
 #define DEEPSURFACE true	//水表回波（可能包括后向散射）
 #define DEEPBOTTOM false	//水底或水中物质回波
 
+extern float angle;
+
 bool DeepWave::ostreamFlag = BLUE;
 
 
@@ -685,7 +687,8 @@ void DeepWave::CalcuDeepDepth(vector<float>& waveParam, float &BorGDepth)
 		float tbegin = *min_element(waveParam.begin(),waveParam.end());
 		float tend = *max_element(waveParam.begin(), waveParam.end());
 
-		BorGDepth = c*(tend - tbegin) / (2 * ndeepwater);
+		//BorGDepth = c*(tend - tbegin) / (2 * ndeepwater);
+		BorGDepth = (c*(tend - tbegin) *cos(asin(sin(angle) / ndeepwater))) / (2 * ndeepwater);
 	}
 }
 

@@ -19,6 +19,7 @@ Description:浅水测深数据水深解算
 #define SURFACE true		//水表回波（可能包括后向散射）
 #define BOTTOM false		//水底或水中物质回波
 
+extern float angle;
 
 bool WaveData::ostreamFlag = BLUE;
 
@@ -766,7 +767,7 @@ void WaveData::CalcuDepth(vector<GaussParameter>& waveParam, float &BorGDepth)
 		//gaussPraIter = waveParam.end()-1;			//!!!坑
 		//float tend = gaussPraIter->b;
 
-		BorGDepth = c*(tend - tbegin) / (2 * nwater);
+		BorGDepth = (c*(tend - tbegin) *cos(asin(sin(angle)/nwater)))/ (2 * nwater);
 	}
 }
 
