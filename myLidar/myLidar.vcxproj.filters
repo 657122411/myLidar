@@ -39,6 +39,12 @@
     <ClInclude Include="WaveData.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ReadFile.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DeepWave.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="levmar-2.6\compiler.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -49,12 +55,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="levmar-2.6\misc.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ReadFile.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="DeepWave.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -74,6 +74,12 @@
     <ClCompile Include="TimeConvert.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ReadFile.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DeepWave.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="levmar-2.6\Axb.c">
       <Filter>头文件</Filter>
     </ClCompile>
@@ -82,12 +88,6 @@
     </ClCompile>
     <ClCompile Include="levmar-2.6\misc.c">
       <Filter>头文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ReadFile.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="DeepWave.cpp">
-      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
