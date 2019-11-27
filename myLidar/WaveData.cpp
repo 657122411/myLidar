@@ -1002,3 +1002,20 @@ ostream &operator<<(ostream &stream, const WaveData &wavedata) {
 	stream << endl;
 	return stream;
 }
+
+
+/*功能：	普通高斯分解计算水深
+//内容：	取两波峰差绝对值直接计算
+*/
+void WaveData::CalcuDepthByGauss(vector<GaussParameter> &waveParam, float &BorGDepth) {
+	if ((waveParam.size() > 1) && (waveParam.size() < 7)) {
+		gaussPraIter = waveParam.begin();
+		float tbegin = gaussPraIter->b;
+		gaussPraIter = waveParam.end() - 1;
+		float tend = gaussPraIter->b;
+		BorGDepth = c * abs(tend - tbegin) * cos(asin(sin(angle) / nwater)) / (2 * nwater);
+	}
+	else {
+		BorGDepth = 0;
+	}
+}
