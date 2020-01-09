@@ -403,23 +403,24 @@ void WaveData::GetData(HS_Lidar &hs) {
 //&noise：	记录的噪声所属波段
 */
 void WaveData::Filter(vector<float> &srcWave, float &noise) {
-	/*
+
+	//------------------截取start---------------------
 	//有效数据的截取部分实验效果并不好。暂时没有加入
-	int m = 30, n=30;//兴趣区域的区间端点
+	int m = 30, n = 30;//兴趣区域的区间端点
 	vector<float> vm(srcWave.begin(), srcWave.begin() + m);
 	float Svm = calculateSigma(vm);
 
 	//前向后遍历取点
-	for (int i = 30; i < srcWave.size()-1; i++)
+	for (int i = 30; i < srcWave.size() - 1; i++)
 	{
 		if (srcWave.at(i - 1) > srcWave.at(i) && srcWave.at(i) < srcWave.at(i + 1))
 		{
 			m = i;
-			for (int j = i+2; j < srcWave.size() - 1; j++)
+			for (int j = i + 2; j < srcWave.size() - 1; j++)
 			{
 				if (srcWave.at(j - 1) < srcWave.at(j) && srcWave.at(j) > srcWave.at(j + 1))
 					n = j;
-					break;
+				break;
 			}
 			if (n > m)
 			{
@@ -427,25 +428,25 @@ void WaveData::Filter(vector<float> &srcWave, float &noise) {
 				vector<float> v2(srcWave.begin(), srcWave.begin() + n);
 				float Sv1 = calculateSigma(v1);
 				float Sv2 = calculateSigma(v2);
-				if (Sv1 > 1.5*Svm||Sv2 > 2 * Sv1)
+				if (Sv1 > 1.5*Svm || Sv2 > 2 * Sv1)
 					break;
 			}
 
 		}
 	}
 	int k = 50, l = 50;//兴趣区域的区间端点
-	vector<float> vk(srcWave.end()-k, srcWave.end());
+	vector<float> vk(srcWave.end() - k, srcWave.end());
 	float Svk = calculateSigma(vk);
 
 	//后向前遍历取点
 	for (int i = 50; i < srcWave.size() - 1; i++)
 	{
-		if (srcWave.at(320-(i - 1)) > srcWave.at(320-i) && srcWave.at(320-i) < srcWave.at(320-(i + 1)))
+		if (srcWave.at(320 - (i - 1)) > srcWave.at(320 - i) && srcWave.at(320 - i) < srcWave.at(320 - (i + 1)))
 		{
 			k = i;
 			for (int j = i + 2; j < srcWave.size() - 1; j++)
 			{
-				if (srcWave.at(320-(j - 1)) < srcWave.at(320-j) && srcWave.at(320-j) > srcWave.at(320-(j + 1)))
+				if (srcWave.at(320 - (j - 1)) < srcWave.at(320 - j) && srcWave.at(320 - j) > srcWave.at(320 - (j + 1)))
 					l = j;
 				break;
 			}
@@ -472,7 +473,9 @@ void WaveData::Filter(vector<float> &srcWave, float &noise) {
 			srcWave.at(j) = srcWave.at(320 - k);
 		}
 	}
-	*/
+	cout << "截取：" << m << "-" << k << "共：" << k - m << endl;
+	//------------------截取end---------------------
+
 
 	//高斯滤波去噪
 	vector<float> dstWave;
@@ -542,13 +545,28 @@ void WaveData::Resolve(vector<float> &srcWave, vector <GaussParameter> &wavePara
 				tgr = m;
 				break;
 			}
+			else
+			{
+				tgr = -1;
+			}
 		}
 		for (m = b; m > 0; m--) {
 			if ((temp[m - 1] < A / 2) && (temp[m + 1] > A / 2)) {
 				tgl = m;
 				break;
 			}
+			else
+			{
+				tgl = -1;
+			}
 		}
+
+		//异常处理
+		if (tgl == -1 || tgr == -1) {
+			return;
+		}
+
+
 		if ((b - tgl) > (tgr - b)) {
 			tg = tgr;
 		}
@@ -619,6 +637,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector <GaussParameter> &wavePara
 
 
 	} while (A > 3 * noise);//循环条件!!!值得探讨
+
 
 
 	//对高斯分量做筛选：时间间隔小于一定值的剔除能量较小的分量，将该vector对象的sigma值设为0
