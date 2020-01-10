@@ -36,7 +36,7 @@ void gau_kernel(float kernel[], int size, float sigma) {
 
 	//get kernel
 	for (x = 0; x < size; x++) {
-		kernel[x] = (1 / sigma * sqrt(2 * 3.1415)) * exp(-(x - m) * (x - m) / 2 * sigma * sigma);
+		kernel[x] = (float)(1 / sigma * sqrt(2 * 3.1415)) * exp(-(x - m) * (x - m) / 2 * sigma * sigma);
 		sum += kernel[x];
 	}
 
@@ -79,7 +79,7 @@ float calculateSigma(vector<float> resultSet) {
 		accum += (*iter - mean) * (*iter - mean);
 	};
 
-	float stdev = sqrt(accum / (resultSet.size() - 1)); //方差
+	float stdev = (float)sqrt(accum / (resultSet.size() - 1)); //方差
 
 	return stdev;
 }
@@ -388,7 +388,7 @@ void WaveData::GetData(HS_Lidar &hs) {
 	m_time.day = pct->day;
 	m_time.hour = pct->hour + TimeDifference;    //直接转化为北京时间
 	m_time.minute = pct->minute;
-	m_time.second = pct->second;
+	m_time.second = (int)pct->second;
 	delete pgt;
 	delete pct;
 
@@ -403,7 +403,7 @@ void WaveData::GetData(HS_Lidar &hs) {
 //&noise：	记录的噪声所属波段
 */
 void WaveData::Filter(vector<float> &srcWave, float &noise) {
-
+	/*
 	//------------------截取start---------------------
 	//有效数据的截取部分实验效果并不好。暂时没有加入
 	int m = 30, n = 30;//兴趣区域的区间端点
@@ -475,6 +475,104 @@ void WaveData::Filter(vector<float> &srcWave, float &noise) {
 	}
 	cout << "截取：" << m << "-" << k << "共：" << k - m << endl;
 	//------------------截取end---------------------
+	*/
+
+	//高斯滤波去噪
+	vector<float> dstWave;
+	dstWave.assign(srcWave.begin(), srcWave.end());
+	gaussian(&srcWave[0], &dstWave[0]);
+
+	noise = 0;
+	//计算随机噪声:两次滤波前后的波形数据的峰值差的均方差（标准差）
+	for (int i = 0; i < srcWave.size(); i++) {
+		noise += (srcWave.at(i) - dstWave.at(i)) * (srcWave.at(i) - dstWave.at(i));
+	}
+	noise = sqrt(noise / srcWave.size());
+
+	srcWave.assign(dstWave.begin(), dstWave.end());
+}
+
+
+
+/*功能：		同上+输出截取范围
+//&srcWave:	通道原始数据
+//&noise：	记录的噪声所属波段
+*/
+void WaveData::FilterWithRegion(vector<float> &srcWave, float &noise,int *ans) {
+
+	//------------------截取start---------------------
+	//有效数据的截取部分实验效果并不好。暂时没有加入
+	int m = 30, n = 30;//兴趣区域的区间端点
+	vector<float> vm(srcWave.begin(), srcWave.begin() + m);
+	float Svm = calculateSigma(vm);
+
+	//前向后遍历取点
+	for (int i = 30; i < srcWave.size() - 1; i++)
+	{
+		if (srcWave.at(i - 1) > srcWave.at(i) && srcWave.at(i) < srcWave.at(i + 1))
+		{
+			m = i;
+			for (int j = i + 2; j < srcWave.size() - 1; j++)
+			{
+				if (srcWave.at(j - 1) < srcWave.at(j) && srcWave.at(j) > srcWave.at(j + 1))
+					n = j;
+				break;
+			}
+			if (n > m)
+			{
+				vector<float> v1(srcWave.begin(), srcWave.begin() + m);
+				vector<float> v2(srcWave.begin(), srcWave.begin() + n);
+				float Sv1 = calculateSigma(v1);
+				float Sv2 = calculateSigma(v2);
+				if (Sv1 > 1.5*Svm || Sv2 > 2 * Sv1)
+					break;
+			}
+
+		}
+	}
+	int k = 50, l = 50;//兴趣区域的区间端点
+	vector<float> vk(srcWave.end() - k, srcWave.end());
+	float Svk = calculateSigma(vk);
+
+	//后向前遍历取点
+	for (int i = 50; i < srcWave.size() - 1; i++)
+	{
+		if (srcWave.at(320 - (i - 1)) > srcWave.at(320 - i) && srcWave.at(320 - i) < srcWave.at(320 - (i + 1)))
+		{
+			k = i;
+			for (int j = i + 2; j < srcWave.size() - 1; j++)
+			{
+				if (srcWave.at(320 - (j - 1)) < srcWave.at(320 - j) && srcWave.at(320 - j) > srcWave.at(320 - (j + 1)))
+					l = j;
+				break;
+			}
+			if (l > k)
+			{
+				vector<float> v1(srcWave.end() - k, srcWave.end());
+				vector<float> v2(srcWave.end() - l, srcWave.end());
+				float Sv1 = calculateSigma(v1);
+				float Sv2 = calculateSigma(v2);
+				if (Sv1 > 1.5 * Svk || Sv2 > 2 * Sv1)
+					break;
+			}
+		}
+	}
+
+	if ((n + 10) <= (320 - k))
+	{
+		for (int i = m - 1; i >= 0; i--)
+		{
+			srcWave.at(i) = srcWave.at(m);
+		}
+		for (int j = 320 - (k - 1); j <= 319; j++)
+		{
+			srcWave.at(j) = srcWave.at(320 - k);
+		}
+	}
+	//cout << "截取：" << m << "-" << k << "共：" << k - m << endl;
+	ans[0] = m;
+	ans[1] = k;
+	//------------------截取end---------------------
 
 
 	//高斯滤波去噪
@@ -490,6 +588,7 @@ void WaveData::Filter(vector<float> &srcWave, float &noise) {
 	noise = sqrt(noise / srcWave.size());
 
 	srcWave.assign(dstWave.begin(), dstWave.end());
+
 }
 
 
@@ -522,8 +621,8 @@ void WaveData::Resolve(vector<float> &srcWave, vector <GaussParameter> &wavePara
 	float A;    //振幅
 	float b;    //脉冲距离
 	float tg;    //峰值时间位置
-	float tgl;    //半峰时间位置（左)
-	float tgr;    //半峰时间位置（右）
+	float tgl = -1;    //半峰时间位置（左)
+	float tgr = -1;    //半峰时间位置（右）
 
 	bool wavetypeFlag = true;            //用来判断水表水底回波计算的flag
 	float surfaceMin, surfaceMax;    //水表回波位置所在的控制范围
@@ -535,14 +634,14 @@ void WaveData::Resolve(vector<float> &srcWave, vector <GaussParameter> &wavePara
 		for (m = 0; m < 320; m++) {
 			if (temp[m] > A) {
 				A = temp[m];
-				b = m;
+				b = (float)m;
 			}
 		}
 
 		//寻找半宽位置
-		for (m = b; m < 319; m++) {
+		for (m = (int)b; m < 319; m++) {
 			if ((temp[m - 1] > A / 2) && (temp[m + 1] < A / 2)) {
-				tgr = m;
+				tgr = (float)m;
 				break;
 			}
 			else
@@ -550,9 +649,9 @@ void WaveData::Resolve(vector<float> &srcWave, vector <GaussParameter> &wavePara
 				tgr = -1;
 			}
 		}
-		for (m = b; m > 0; m--) {
+		for (m = (int)b; m > 0; m--) {
 			if ((temp[m - 1] < A / 2) && (temp[m + 1] > A / 2)) {
-				tgl = m;
+				tgl = (float)m;
 				break;
 			}
 			else
@@ -562,7 +661,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector <GaussParameter> &wavePara
 		}
 
 		//异常处理
-		if (tgl == -1 || tgr == -1) {
+		if (tgl < 0 || tgr < 0) {
 			return;
 		}
 
@@ -575,29 +674,29 @@ void WaveData::Resolve(vector<float> &srcWave, vector <GaussParameter> &wavePara
 		}
 
 		//计算sigma
-		float sigma = fabs(tg - b) / sqrt(2 * log(2));
+		float sigma = (float)fabs(tg - b) / sqrt(2 * log(2));
 
 		//判断水表水底回波
 		if (wavetypeFlag == true) {
 			//找右侧拐点
 			surfaceMax = b;
 			float rval = abs(temp[(int)b + 1] - temp[(int)b]);
-			for (int i = b; b < 320 - b; i++) {
+			for (int i = (int)b; b < 320 - b; i++) {
 				if (abs(temp[i + 1] - temp[i]) >= rval)
 					rval = abs(temp[i + 1] - temp[i]);
 				else {
-					surfaceMax = i + 2;
+					surfaceMax = (float)(i + 2);
 					break;
 				}
 			}
 			//找左侧拐点
 			surfaceMin = b;
 			float lval = abs(temp[(int)b - 1] - temp[(int)b]);
-			for (int i = b; b > 0; i--) {
+			for (int i = (int)b; b > 0; i--) {
 				if (abs(temp[i - 1] - temp[i]) >= lval)
 					lval = abs(temp[i - 1] - temp[i]);
 				else {
-					surfaceMin = i - 2;
+					surfaceMin = (float)(i - 2);
 					break;
 				}
 			}
@@ -673,7 +772,7 @@ void WaveData::Resolve(vector<float> &srcWave, vector <GaussParameter> &wavePara
 //LM算法参考：	https://blog.csdn.net/shajun0153/article/details/75073137
 */
 void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &waveParam) {
-	int size = waveParam.size();
+	int size = (int)waveParam.size();
 	//解算初值为双峰等情况
 	switch (size) {
 	case 2: {
@@ -686,7 +785,7 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 			p[i++] = gp.sigma;
 		}
 		int m = i;
-		int n = srcWave.size();
+		int n = (int)srcWave.size();
 
 		//获取拟合数据
 		double x[320];
@@ -715,9 +814,9 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 		//将优化后的参数组赋给vector
 		i = 0;
 		for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end(); gaussPraIter++) {
-			gaussPraIter->A = p[i++];
-			gaussPraIter->b = p[i++];
-			gaussPraIter->sigma = p[i++];
+			gaussPraIter->A = (float)p[i++];
+			gaussPraIter->b = (float)p[i++];
+			gaussPraIter->sigma = (float)p[i++];
 		}
 
 		break;
@@ -732,7 +831,7 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 			p[i++] = gp.sigma;
 		}
 		int m = i;
-		int n = srcWave.size();
+		int n = (int)srcWave.size();
 
 		//获取拟合数据
 		double x[320];
@@ -761,9 +860,9 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 		//将优化后的参数组赋给vector
 		i = 0;
 		for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end(); gaussPraIter++) {
-			gaussPraIter->A = p[i++];
-			gaussPraIter->b = p[i++];
-			gaussPraIter->sigma = p[i++];
+			gaussPraIter->A = (float)p[i++];
+			gaussPraIter->b = (float)p[i++];
+			gaussPraIter->sigma = (float)p[i++];
 		}
 
 		break;
@@ -778,7 +877,7 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 			p[i++] = gp.sigma;
 		}
 		int m = i;
-		int n = srcWave.size();
+		int n = (int)srcWave.size();
 
 		//获取拟合数据
 		double x[320];
@@ -807,9 +906,9 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 		//将优化后的参数组赋给vector
 		i = 0;
 		for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end(); gaussPraIter++) {
-			gaussPraIter->A = p[i++];
-			gaussPraIter->b = p[i++];
-			gaussPraIter->sigma = p[i++];
+			gaussPraIter->A = (float)p[i++];
+			gaussPraIter->b = (float)p[i++];
+			gaussPraIter->sigma = (float)p[i++];
 		}
 
 		break;
@@ -824,7 +923,7 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 			p[i++] = gp.sigma;
 		}
 		int m = i;
-		int n = srcWave.size();
+		int n = (int)srcWave.size();
 
 		//获取拟合数据
 		double x[320];
@@ -853,9 +952,9 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 		//将优化后的参数组赋给vector
 		i = 0;
 		for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end(); gaussPraIter++) {
-			gaussPraIter->A = p[i++];
-			gaussPraIter->b = p[i++];
-			gaussPraIter->sigma = p[i++];
+			gaussPraIter->A = (float)p[i++];
+			gaussPraIter->b = (float)p[i++];
+			gaussPraIter->sigma = (float)p[i++];
 		}
 
 		break;
@@ -870,7 +969,7 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 			p[i++] = gp.sigma;
 		}
 		int m = i;
-		int n = srcWave.size();
+		int n = (int)srcWave.size();
 
 		//获取拟合数据
 		double x[320];
@@ -899,9 +998,9 @@ void WaveData::Optimize(vector<float> &srcWave, vector <GaussParameter> &wavePar
 		//将优化后的参数组赋给vector
 		i = 0;
 		for (gaussPraIter = waveParam.begin(); gaussPraIter != waveParam.end(); gaussPraIter++) {
-			gaussPraIter->A = p[i++];
-			gaussPraIter->b = p[i++];
-			gaussPraIter->sigma = p[i++];
+			gaussPraIter->A = (float)p[i++];
+			gaussPraIter->b = (float)p[i++];
+			gaussPraIter->sigma = (float)p[i++];
 		}
 
 		break;
@@ -938,7 +1037,7 @@ void WaveData::CalcuDepth(vector <GaussParameter> &waveParam, float &BorGDepth) 
 		//gaussPraIter = waveParam.end()-1;			//!!!坑
 		//float tend = gaussPraIter->b;
 
-		BorGDepth = c * (tend - tbegin) * cos(asin(sin(angle) / nwater)) / (2 * nwater);
+		BorGDepth = (float)c * (tend - tbegin) * cos(asin(sin(angle) / nwater)) / (2 * nwater);
 	}
 	else if (waveParam.size() >= 5) {
 		// 校验特殊情况：已确定水表波，水底波时间分布：在水表波后区域数量<水表波前，为无效数据
@@ -979,7 +1078,7 @@ void WaveData::CalcuDepth(vector <GaussParameter> &waveParam, float &BorGDepth) 
 		//gaussPraIter = waveParam.end()-1;			//!!!坑
 		//float tend = gaussPraIter->b;
 
-		tend > tbegin ? BorGDepth = c * (tend - tbegin) * cos(asin(sin(angle) / nwater)) / (2 * nwater) : BorGDepth = 0;
+		tend > tbegin ? BorGDepth = (float)c * (tend - tbegin) * cos(asin(sin(angle) / nwater)) / (2 * nwater) : BorGDepth = 0;
 	}
 }
 
@@ -1032,7 +1131,7 @@ void WaveData::CalcuDepthByGauss(vector<GaussParameter> &waveParam, float &BorGD
 		float tbegin = gaussPraIter->b;
 		gaussPraIter = waveParam.end() - 1;
 		float tend = gaussPraIter->b;
-		BorGDepth = c * abs(tend - tbegin) * cos(asin(sin(angle) / nwater)) / (2 * nwater);
+		BorGDepth = (float)c * abs(tend - tbegin) * cos(asin(sin(angle) / nwater)) / (2 * nwater);
 	}
 	else {
 		BorGDepth = 0;

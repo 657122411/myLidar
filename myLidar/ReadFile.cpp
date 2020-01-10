@@ -10,7 +10,7 @@ Description:测深数据文件操作类
 
 
 //判断两浮点数是否相等(经纬度变化小于绝对误差)
-bool isEqual(const double a, const double b) 
+bool isEqual(const double a, const double b)
 {
 	const double eps_0 = 1.0e-6;
 	bool isEqualFlag = false;
@@ -51,7 +51,7 @@ ReadFile::~ReadFile()
 
 /*************************************************
 Function:       设置读取文件的指针
-Description:    
+Description:
 Input:          读取文件的绝对路径
 Output:			将该路径赋给文件指针
 *************************************************/
@@ -75,20 +75,20 @@ bool ReadFile::setFilename(char filename[100])
 /*************************************************
 Function:       处理全数据蓝色通道
 Description:	读取通道数据滤波去噪分解优化输出
-Input:          
+Input:
 Output:			CH2水深解算结果
 *************************************************/
 void ReadFile::readBlueAll()
 {
 	unsigned _int64 j = 0;
 	HS_Lidar hs;
-	
+
 	//把文件的位置指针移到文件尾获取文件长度
 	unsigned _int64 length;
 	_fseeki64(m_filePtr, 0L, SEEK_END);
 	length = _ftelli64(m_filePtr);
 	printf("BLueChannelProcessing:");
-	
+
 	//首先定义流 output_stream  ios::out 示输出,ios::app表示输出到文件尾。
 	fstream output_stream;
 	output_stream.open("BlueOut.txt", ios::out);
@@ -130,11 +130,11 @@ void ReadFile::readBlueAll()
 
 		}
 		else
-		{	
+		{
 			//可能会多出二段回波数据：uint16_t[CH.nL1] -> 2*n
-			j+=2;
+			j += 2;
 		}
-		
+
 	} while (!feof(m_filePtr));
 
 	//文件结束退出
@@ -264,7 +264,7 @@ void ReadFile::readMix()
 			blueStd = calculateSigma(mywave.m_BlueWave);
 			greenStd = calculateSigma(mywave.m_GreenWave);
 
-			blueStd >= 1.2*greenStd ?  bgflag = BLUE : bgflag = GREEN;//判断阈值
+			blueStd >= 1.2*greenStd ? bgflag = BLUE : bgflag = GREEN;//判断阈值
 
 			switch (bgflag)
 			{
@@ -289,7 +289,7 @@ void ReadFile::readMix()
 			default:
 				break;
 			}
-			
+
 			//输出信息到文件
 			output_stream << mywave;
 
@@ -341,12 +341,15 @@ void ReadFile::outputData() {
 
 	fstream origin;//初始数据
 	fstream filter;//滤波数据
+	fstream region;//截取数据
 	fstream resolve;//初解算数据
 	fstream iterate;//迭代数据
 	fstream gaussB;//传统解法蓝通道
 	fstream gaussG;//传统解法绿通道
 	origin.open("Origin.txt", ios::out);
 	filter.open("Filter.txt", ios::out);
+	int*ret;
+	region.open("Region.txt", ios::out);
 	resolve.open("Resolve.txt", ios::out);
 	iterate.open("Iterate.txt", ios::out);
 	gaussB.open("GaussB.txt", ios::out);
@@ -389,7 +392,8 @@ void ReadFile::outputData() {
 			}
 			origin << endl;
 
-			mywave.Filter(mywave.m_BlueWave, mywave.m_BlueNoise);
+			ret = new int[2];
+			mywave.FilterWithRegion(mywave.m_BlueWave, mywave.m_BlueNoise, ret);
 
 			//输出滤波数据
 			filter << "<" << index << "B" << ">" << endl;
@@ -397,6 +401,8 @@ void ReadFile::outputData() {
 				filter << data << " ";
 			}
 			filter << endl;
+			region << "<" << index << "B" << ">" << ret[0] << "-" << ret[1] << "-" << ret[1] - ret[0] << endl;
+			delete ret;
 
 			mywave.Resolve(mywave.m_BlueWave, mywave.m_BlueGauPra, mywave.m_BlueNoise);
 
@@ -408,7 +414,7 @@ void ReadFile::outputData() {
 			}
 			resolve << endl;
 			//输出子峰
-			int sizeB = mywave.m_BlueGauPra.size();
+			int sizeB = (int)mywave.m_BlueGauPra.size();
 			for (int k = 0; k < sizeB; k++) {
 				resolve << "Component" << k + 1 << endl;
 				for (int i = 0; i < 320; ++i) {
@@ -421,7 +427,7 @@ void ReadFile::outputData() {
 			//输出总量信息
 			resolve << "Sum" << endl;
 			for (int x = 0; x < 320; x++) {
-				int size = mywave.m_BlueGauPra.size();
+				int size = (int)mywave.m_BlueGauPra.size();
 				float da = 0;
 				for (int i = 0; i < size; i++) {
 					da += mywave.m_BlueGauPra[i].A *
@@ -472,7 +478,7 @@ void ReadFile::outputData() {
 			//输出总量信息
 			iterate << "Sum" << endl;
 			for (int x = 0; x < 320; x++) {
-				int size = mywave.m_BlueGauPra.size();
+				int size = (int)mywave.m_BlueGauPra.size();
 				float da = 0;
 				for (int i = 0; i < size; i++) {
 					da += mywave.m_BlueGauPra[i].A *
@@ -495,7 +501,8 @@ void ReadFile::outputData() {
 			}
 			origin << endl;
 
-			mywave.Filter(mywave.m_GreenWave, mywave.m_GreenNoise);
+			ret = new int[2];
+			mywave.FilterWithRegion(mywave.m_GreenWave, mywave.m_GreenNoise, ret);
 
 			//输出滤波数据
 			filter << "<" << index << "G" << ">" << endl;
@@ -503,6 +510,8 @@ void ReadFile::outputData() {
 				filter << data << " ";
 			}
 			filter << endl;
+			region << "<" << index << "G" << ">" << ret[0] << "-" << ret[1] << "-" << ret[1] - ret[0] << endl;
+			delete ret;
 
 			mywave.Resolve(mywave.m_GreenWave, mywave.m_GreenGauPra, mywave.m_GreenNoise);
 
@@ -514,7 +523,7 @@ void ReadFile::outputData() {
 			}
 			resolve << endl;
 			//输出子峰
-			int sizeG = mywave.m_GreenGauPra.size();
+			int sizeG = (int)mywave.m_GreenGauPra.size();
 			for (int k = 0; k < sizeG; k++) {
 				resolve << "Component" << k + 1 << endl;
 				for (int i = 0; i < 320; ++i) {
@@ -527,7 +536,7 @@ void ReadFile::outputData() {
 			//输出总量信息
 			resolve << "Sum" << endl;
 			for (int x = 0; x < 320; x++) {
-				int size = mywave.m_GreenGauPra.size();
+				int size = (int)mywave.m_GreenGauPra.size();
 				float da = 0;
 				for (int i = 0; i < size; i++) {
 					da += mywave.m_GreenGauPra[i].A *
@@ -555,7 +564,7 @@ void ReadFile::outputData() {
 				gaussG << data.A << " " << data.b << " " << data.sigma << " ";
 			}
 			gaussG << endl;
-			
+
 
 			//输出迭代数据
 			mywave.Optimize(mywave.m_GreenWave, mywave.m_GreenGauPra);
@@ -579,7 +588,7 @@ void ReadFile::outputData() {
 			//输出总量信息
 			iterate << "Sum" << endl;
 			for (int x = 0; x < 320; x++) {
-				int size = mywave.m_GreenGauPra.size();
+				int size = (int)mywave.m_GreenGauPra.size();
 				float da = 0;
 				for (int i = 0; i < size; i++) {
 					da += mywave.m_GreenGauPra[i].A *
@@ -652,6 +661,7 @@ void ReadFile::outputData() {
 		output_stream.close();
 		origin.close();//初始数据
 		filter.close();//滤波数据
+		region.close();
 		resolve.close();//初解算数据
 		iterate.close();//迭代数据
 		printf("finished!\n");
@@ -917,13 +927,13 @@ void ReadFile::readDeepOutLas()
 			dw.GetDeepData(hs);
 
 			//当经纬度发生变化时计算该经纬度的平均有效水深进行输出
-			if ((!isEqual(hs.header.dX,tmpX) || !isEqual(hs.header.dY, tmpY))&&(count>0))
+			if ((!isEqual(hs.header.dX, tmpX) || !isEqual(hs.header.dY, tmpY)) && (count > 0))
 			{
 				tmpX = hs.header.dX;
 				tmpY = hs.header.dY;
 				//控制输出精度
 				las_stream << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(6) << tmpX << " " << tmpY << " " << setprecision(3) << avedepth / count << endl;
-				
+
 			}
 
 			//获取近红外水面点
@@ -975,7 +985,7 @@ void ReadFile::readDeepOutLas()
 				break;
 			}
 
-		
+
 			//文件指针偏移一帧完整数据的字节数：2688/8
 			j += 336;
 
